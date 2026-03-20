@@ -6,10 +6,14 @@
   <img src="https://img.shields.io/badge/TensorFlow-2.15-orange?logo=tensorflow" alt="TensorFlow" />
 </div>
 
-PPT LINK
-https://www.canva.com/design/DAHEgOGoen0/l46G1Us_AT1CsczKEGCZ9A/edit?utm_content=DAHEgOGoen0&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+## 🎬 Demo & Presentation
 
-DEMO VEDIO LINK 
+| Resource | Link |
+|----------|------|
+| 🎥 Demo Video | [Watch Here](PASTE_VIDEO_LINK_HERE) |
+| 📊 Pitch Deck (PPT) | [View Presentation](https://www.canva.com/design/DAHEgOGoen0/l46G1Us_AT1CsczKEGCZ9A/edit?utm_content=DAHEgOGoen0&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton) |
+| 🌐 Live Demo | (https://skill-forge-iota.vercel.app/) |
+
 
 
 ## 📖 The Problem
