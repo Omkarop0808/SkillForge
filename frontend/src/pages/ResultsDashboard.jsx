@@ -199,12 +199,31 @@ export default function ResultsDashboard() {
       
       setTimeout(() => {
         let reply = "I've saved that to your Notebook. Do you want me to quiz you on this later?"
-        if (query.includes("http")) {
-          reply = "I fetched that URL! It looks like a great resource on this topic. I've extracted the key takeaways and added them to your learning memory."
+        let noteCard = null;
+
+        if (query.includes("http") || query.includes("youtube")) {
+          reply = "I fetched that URL! It looks like a great resource on this topic. I've extracted the key takeaways into your SkillForge memory:"
+          noteCard = {
+            title: "📝 Extracted Key Takeaways",
+            points: [
+              "The module focuses entirely on the foundational architecture of this technology.",
+              "Scalability is largely dependent on isolating side-effects intelligently.",
+              "Always memorize the core lifecycle principle to avoid memory leaks.",
+              "I have automatically attached these notes securely to your current learning module."
+            ]
+          }
         } else if (query.toLowerCase().includes("summarize")) {
-          reply = "Here's a quick summary:\n\n- The core concept revolves around optimizing graph traversals.\n- Always track visited nodes to prevent cycles.\n- I've appended this note to your active skill."
+          reply = "I analyzed this module for you. Here is your structured summary:"
+          noteCard = {
+            title: "⚡ Concept Summary",
+            points: [
+              "The core concept revolves around optimizing data traversals.",
+              "Track your state rigorously to prevent recursive infinite loops.",
+              "I've appended this flashcard to your active skill node for later review."
+            ]
+          }
         }
-        setMentorChat(prev => [...prev, { role: 'ai', text: reply }])
+        setMentorChat(prev => [...prev, { role: 'ai', text: reply, noteCard }])
         setIsMentorTyping(false)
       }, 1500)
     }
@@ -1028,8 +1047,22 @@ export default function ResultsDashboard() {
               
               {mentorChat.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`p-4 max-w-[85%] text-sm rounded-2xl shadow-lg whitespace-pre-wrap ${msg.role === 'user' ? 'bg-purple-600 text-white rounded-tr-sm' : 'bg-white/5 border border-white/5 text-slate-300 rounded-tl-sm'}`}>
-                    {msg.text}
+                  <div className={`p-4 max-w-[85%] text-sm rounded-2xl shadow-lg whitespace-pre-wrap flex flex-col ${msg.role === 'user' ? 'bg-purple-600 text-white rounded-tr-sm' : 'bg-white/5 border border-white/5 text-slate-300 rounded-tl-sm'}`}>
+                    <span>{msg.text}</span>
+                    {msg.noteCard && (
+                      <div className="mt-4 bg-[#06020c]/80 border border-purple-500/30 rounded-xl p-4 shadow-inner">
+                        <div className="text-purple-400 font-bold mb-3 flex items-center gap-2">
+                          {msg.noteCard.title}
+                        </div>
+                        <ul className="space-y-2">
+                          {msg.noteCard.points.map((pt, i) => (
+                            <li key={i} className="flex gap-2 text-slate-300 leading-relaxed text-[13px]">
+                              <span className="text-purple-500 mt-0.5">•</span> {pt}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
