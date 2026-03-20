@@ -5,51 +5,59 @@ Compares resume skills vs JD skills using both exact matching and
 semantic similarity via sentence-transformers (no ChromaDB needed).
 """
 
-from sentence_transformers import SentenceTransformer
+import math
+from google import genai
+from config import Settings
 
-# ─── Singleton Instances ──────────────────────────────────────
+# Initialize Gemini Client for Embeddings
+settings = Settings()
+client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
-_embedder = None
+def dot_product(v1, v2):
+    return sum(x * y for x, y in zip(v1, v2))
 
+def magnitude(v):
+    return math.sqrt(sum(x * x for x in v))
 
-def _get_embedder():
-    """Get or create the sentence-transformer embedding model."""
-    global _embedder
-    if _embedder is None:
-        _embedder = SentenceTransformer("all-MiniLM-L6-v2")
-    return _embedder
-
+def cosine_similarity(v1, v2):
+    mag_v1 = magnitude(v1)
+    mag_v2 = magnitude(v2)
+    if mag_v1 == 0 or mag_v2 == 0:
+        return 0.0
+    return dot_product(v1, v2) / (mag_v1 * mag_v2)
 
 def semantic_match(query_skill: str, candidate_skills: list[str], threshold: float = 0.65) -> str | None:
     """
-    Find the best semantic match for a query skill among candidates.
-    
-    Uses sentence-transformers to compute cosine similarity directly.
-    No ChromaDB or external vector DB needed.
-    
-    Args:
-        query_skill: Skill name to match
-        candidate_skills: List of candidate skill names
-        threshold: Minimum cosine similarity threshold
-        
-    Returns:
-        Best matching skill name, or None if no match above threshold
+    Find the best semantic match for a query skill among candidates using Gemini API.
+    Dramatically reduces server RAM usage by removing PyTorch/Local Embeddings.
     """
     if not candidate_skills:
         return None
 
-    model = _get_embedder()
-    query_emb = model.encode(query_skill, normalize_embeddings=True)
-    candidate_embs = model.encode(candidate_skills, normalize_embeddings=True)
+    try:
+        # Embed the query skill
+        query_resp = client.models.embed_content(model="text-embedding-004", contents=query_skill)
+        query_emb = query_resp.embeddings[0].values
 
-    # Compute cosine similarities
-    similarities = query_emb @ candidate_embs.T
+        # Embed all candidate skills in one batch
+        candidate_resp = client.models.embed_content(model="text-embedding-004", contents=candidate_skills)
+        candidate_embs = [emb.values for emb in candidate_resp.embeddings]
 
-    best_idx = similarities.argmax()
-    best_score = similarities[best_idx]
+        # Calculate best match
+        best_idx = 0
+        best_score = 0.0
 
-    if best_score >= threshold:
-        return candidate_skills[best_idx]
+        for i, emp in enumerate(candidate_embs):
+            score = cosine_similarity(query_emb, emp)
+            if score > best_score:
+                best_score = score
+                best_idx = i
+
+        if best_score >= threshold:
+            return candidate_skills[best_idx]
+    except Exception as e:
+        print(f"Gemini Embedding Error: {e}")
+        
     return None
 
 

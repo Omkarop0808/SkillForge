@@ -16,9 +16,7 @@ PyMuPDF>=1.23.0,<2.0.0
 # AI / LLM
 google-genai>=1.0.0
 
-# Embeddings (semantic matching — no ChromaDB needed)
-sentence-transformers>=3.0.0,<4.0.0
-
+# Embeddings (Swapped to Gemini API to eliminate Render 512MB RAM OOM crash)
 # Graph
 networkx>=3.2.0,<4.0.0
 

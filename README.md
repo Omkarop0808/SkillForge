@@ -5,52 +5,73 @@
   <img src="https://img.shields.io/badge/FastAPI-100%25-009688?logo=fastapi" alt="FastAPI" />
   <img src="https://img.shields.io/badge/React-18-blue?logo=react" alt="React" />
   <img src="https://img.shields.io/badge/TensorFlow-2.15-orange?logo=tensorflow" alt="TensorFlow" />
-  <img src="https://img.shields.io/badge/Magic_UI-Integrated-purple" alt="Magic UI" />
 </div>
 
 ## 📖 The Problem
-Traditional employee onboarding wastes **up to 40% of an experienced hire's time** by forcing them through redundant compliance and training modules they already know, while simultaneously overwhelming freshers with gaps in their foundational knowledge. 
+Traditional employee onboarding wastes **up to 40% of an experienced hire's time** by forcing them through redundant compliance and training modules they already know, while simultaneously overwhelming freshers with gaps in their foundational knowledge. The "one-size-fits-all" learning approach is fundamentally broken for modern agile teams. 
 
 ## 💡 Our Solution
 **SkillForge** is an AI-driven adaptive onboarding engine that personalizes training pathways from day one. 
-By instantly cross-referencing a candidate's Resume against a target Job Description (JD), our Machine Learning pipeline surgically extracts the exact skill gaps and instantly generates a dynamic, gamified learning roadmap.
+By instantly cross-referencing a candidate's Resume against a target Job Description (JD), our ML pipeline surgically extracts exact skill gaps and instantly generates a dynamic, gamified learning roadmap tailored uniquely to their career delta.
 
 ---
 
 ## 🌟 Key Features
-- **🧠 Interactive Skill Gap Map**: A dynamic `react-flow` topology mapping your Missing vs Required proficiency levels, styled with color-coded severity boxes.
-- **🗺️ Gamified "Candy Crush" Roadmap**: A highly interactive, S-curve learning pathway.
-- **📄 Native 6-Page Document Generation Engine**: A robust exporter powered by `jsPDF` that builds a custom AI-curated syllabus with YouTube links, educator recommendations (CodeWithHarry, Akshay Saini), and weekly study plans.
-- **📺 Embedded Video Learning Hub**: Watch tutorials inside the app. Progress is automatically tracked via the YouTube IFrame API, auto-completing modules at 80% watch time!
-- **📓 NotebookLM-Style Mentor Drawer**: An integrated AI sliding pane where you can paste URLs or text for instant summaries & quizzes while watching videos.
-- **📚 Multi-View Operations Dashboard**: Effortlessly switch between Skill Gaps, Roadmap Mindmaps, Video Hubs, and Progress tracking metrics.
+- **🧠 Interactive Skill Gap Map**: A dynamic `react-flow` topology mapping your Missing vs Required proficiency levels, styled with color-coded severity boxes (Critical, Partial, Near-Competent).
+- **🗺️ Gamified "Candy Crush" Roadmap**: A highly interactive, S-curve learning pathway visualizing your journey from baseline to target role.
+- **📄 Native 6-Page Document Generation Engine**: A robust exporter powered by `jsPDF` that builds a custom AI-curated syllabus with YouTube links, educator recommendations, and weekly study plans.
+- **📺 Embedded Video Learning Hub**: Watch curated tutorials inside the app. Progress is tracked automatically, advancing you to the next module with celebratory confetti upon completion!
+- **📓 NotebookLM-Style Mentor Drawer**: An integrated AI sliding pane where you can paste URLs or text for instant learning summaries & quizzes while watching videos.
 
 ---
 
-## 🏗️ Architecture & Logic Overview
+## 🏗️ Architecture Design (High-Level)
 
 ```mermaid
 graph TD
-    A[User Uploads Resume & JD] --> B(NLP Parsing Layer)
-    B --> C{Skill Extraction Engine}
-    C -->|spaCy + fine-tuned BERT| D[Skill Gap Analyzer]
-    D --> E[Vector Cosine Similarity Filtering]
-    E --> F[Adaptive Graph Path Generator]
-    F --> G[Resource Recommender - YouTube API]
-    G --> H((Immersive Dashboard Visualization))
+    subgraph Frontend [React Multi-View SPA]
+        A[Authentication: Clerk] --> B[Upload UI]
+        B --> C[Skill Gap Map / React Flow]
+        C --> D[LMS Dashboard Hub]
+        D --> E[PDF Export Engine]
+    end
+
+    subgraph Backend [FastAPI Server]
+        B -.-> |Multiform Resume & JD| F(FastAPI Endpoints)
+        F --> G{Gemini 2.5 Flash API}
+        F --> H[TensorFlow Emdeddings]
+        G -.-> |Vectorize & Map| I[Gap Analysis Engine]
+    end
+
+    subgraph Data & Storage
+        I -.-> J[(Supabase DB: User Metrics)]
+        I -.-> K[YouTube v3 API]
+    end
+
+    I --> |Returns Topological JSON| C
 ```
 
-1. **Extraction**: We use advanced NLP to extract arrays of skills from unstructured PDF text.
-2. **Gap Analysis**: We perform heavy vector math (Cosine Similarity via Sentence-Transformers) to isolate the delta between the candidate's embeddings and the JD's embeddings.
-3. **Graph Pathing**: The isolated missing skills are run through a Directed Acyclic Graph (DAG) topological sort to generate the optimal learning prerequisite order.
+## 🔄 User Workflow Pipeline
 
----
+```mermaid
+sequenceDiagram
+    actor You
+    participant UI as React Frontend
+    participant Server as FastAPI Backend
+    participant AI as Gemini 2.5 NLP
+    participant YT as YouTube API
 
-## 📊 Dataset Citations
-We trained and evaluated our NLP systems using the following public resources:
-- **O*NET 28.0 Database**: Occupational skill constraints and prerequisite mapping.
-- **Kaggle Resume Dataset**: 2,400+ diverse resumes used for NER extraction training.
-- **Kaggle Jobs & JD Dataset**: Ground truth for standardizing operational and technical domain roles.
+    You->>UI: Uploads Resume (PDF) & Job Title
+    UI->>Server: POST /api/analyze-gap
+    Server->>AI: Prompts text extraction & JD mapping
+    AI-->>Server: JSON: Critical, Partial, Minor Gaps
+    Server->>YT: Query canonical video resources per gap
+    YT-->>Server: Video IDs & Metadata
+    Server-->>UI: Returns comprehensive Roadmap tree
+    UI->>You: Renders Interactive Skill Gap Map
+    You->>UI: Clicks "Generate Plan"
+    UI->>You: Warps to LMS Dashboard + YouTube Auto-Play
+```
 
 ---
 
@@ -77,5 +98,3 @@ cd frontend
 npm install
 npm run dev
 ```
-
-
