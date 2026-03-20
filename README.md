@@ -50,6 +50,9 @@ graph TD
     I --> |Returns Topological JSON| C
 ```
 
+<img width="1606" height="576" alt="diagram-export-3-20-2026-10_35_38-PM" src="https://github.com/user-attachments/assets/b8bc71fd-485e-44cc-8c45-9bfd8608495c" />
+
+
 ## 🔄 User Workflow Pipeline
 
 ```mermaid
@@ -73,6 +76,9 @@ sequenceDiagram
 ```
 
 ---
+<img width="998" height="1113" alt="diagram-export-3-20-2026-10_12_45-PM" src="https://github.com/user-attachments/assets/27d22e26-6e86-466a-8a42-cb4bd2cb947c" />
+
+
 
 ## 🛠️ Setup Instructions
 
