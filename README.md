@@ -1,7 +1,6 @@
 # 🚀 SkillForge: AI-Adaptive Onboarding Engine
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Status-Hackathon_Finished-brightgreen" alt="Status" />
   <img src="https://img.shields.io/badge/FastAPI-100%25-009688?logo=fastapi" alt="FastAPI" />
   <img src="https://img.shields.io/badge/React-18-blue?logo=react" alt="React" />
   <img src="https://img.shields.io/badge/TensorFlow-2.15-orange?logo=tensorflow" alt="TensorFlow" />
