@@ -2,7 +2,10 @@
  * API Utility — Handles all communication with the SkillForge backend.
  */
 
-const API_BASE = '/api';
+// Use the VITE_API_URL environment variable if deployed, otherwise fallback to local proxy
+const API_BASE = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL.replace(/\/+$/, '')}/api` 
+  : '/api';
 
 /**
  * Upload a resume PDF and extract skills.
