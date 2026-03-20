@@ -7,10 +7,9 @@ semantic similarity via sentence-transformers (no ChromaDB needed).
 
 import math
 from google import genai
-from config import Settings
+from config import settings
 
 # Initialize Gemini Client for Embeddings
-settings = Settings()
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
 def dot_product(v1, v2):
