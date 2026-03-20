@@ -1,0 +1,27 @@
+# SkillForge Backend Dependencies
+# Compatible with Python 3.11 on Windows (no C++ build tools needed)
+
+fastapi>=0.110.0,<1.0.0
+uvicorn[standard]>=0.27.0,<1.0.0
+python-multipart>=0.0.9
+pydantic>=2.5.0,<3.0.0
+pydantic-settings>=2.1.0,<3.0.0
+
+# Database
+supabase>=2.3.0,<3.0.0
+
+# PDF Parsing
+PyMuPDF>=1.23.0,<2.0.0
+
+# AI / LLM
+google-genai>=1.0.0
+
+# Embeddings (semantic matching — no ChromaDB needed)
+sentence-transformers>=3.0.0,<4.0.0
+
+# Graph
+networkx>=3.2.0,<4.0.0
+
+# Utilities
+python-dotenv>=1.0.0,<2.0.0
+httpx>=0.25.0,<1.0.0
