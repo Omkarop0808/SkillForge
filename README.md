@@ -6,6 +6,12 @@
   <img src="https://img.shields.io/badge/TensorFlow-2.15-orange?logo=tensorflow" alt="TensorFlow" />
 </div>
 
+PPT LINK
+https://www.canva.com/design/DAHEgOGoen0/l46G1Us_AT1CsczKEGCZ9A/edit?utm_content=DAHEgOGoen0&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+
+DEMO VEDIO LINK 
+
+
 ## 📖 The Problem
 Traditional employee onboarding wastes **up to 40% of an experienced hire's time** by forcing them through redundant compliance and training modules they already know, while simultaneously overwhelming freshers with gaps in their foundational knowledge. The "one-size-fits-all" learning approach is fundamentally broken for modern agile teams. 
 
