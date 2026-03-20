@@ -1,47 +1,214 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, Download, Play, CheckCircle2, Lock, Flame, Trophy, LayoutDashboard, BrainCircuit, Target, Settings, HelpCircle, ChevronRight, X, BookOpen, Clock, PlayCircle } from 'lucide-react'
-import { ReactFlow, Background, Controls } from '@xyflow/react'
-import { UserButton } from '@clerk/clerk-react'
-import '@xyflow/react/dist/style.css'
+import { Sparkles, Play, CheckCircle2, Lock, Flame, Trophy, LayoutDashboard, BrainCircuit, Target, Settings, HelpCircle, ChevronRight, X, BookOpen, Clock, PlayCircle, Loader2, LogOut, ArrowRight, Video, Download } from 'lucide-react'
+import { UserButton, useUser } from '@clerk/clerk-react'
+import YouTube from 'react-youtube'
 import confetti from 'canvas-confetti'
+import { ReactFlow, Background, Controls, Handle, Position } from '@xyflow/react'
+import '@xyflow/react/dist/style.css'
+import html2canvas from 'html2canvas'
+import { jsPDF } from 'jspdf'
 
 /* ─── Gamified Node Component ──────────────────────── */
 function CandyNode({ data }) {
   const { isCompleted, isCurrent, isLocked } = data;
-  
   let styles = "bg-slate-800 border-slate-700 text-slate-500 opacity-60"; // locked
   let Icon = Lock;
-
   if (isCompleted) {
     styles = "bg-green-500/20 border-green-500 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.4)]";
     Icon = CheckCircle2;
   } else if (isCurrent) {
-    styles = "bg-purple-600 border-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.6)] animate-pulse hover:scale-110";
+    styles = "bg-purple-600 border-purple-400 text-white shadow-[0_0_30px_rgba(168,85,247,0.8)] animate-bounce hover:scale-110";
     Icon = Play;
   }
-
   return (
     <div 
-      className={`rounded-full flex items-center justify-center w-16 h-16 border-4 cursor-pointer transition-all duration-300 ${styles}`}
+      className={`rounded-full flex items-center justify-center w-20 h-20 border-4 cursor-pointer transition-all duration-300 relative ${styles}`}
       onClick={() => {
         if (!isLocked) data.onNodeClick?.(data)
       }}
     >
-      <Icon className="w-8 h-8" strokeWidth={isCurrent ? 3 : 2} />
-      <div className="absolute top-16 w-36 text-center mt-2 pointer-events-none">
-        <p className="text-xs font-bold text-slate-300 drop-shadow-md leading-tight">{data.label || data.skill}</p>
+      <Handle type="target" position={Position.Top} className="opacity-0 w-0 h-0" />
+      <Handle type="source" position={Position.Bottom} className="opacity-0 w-0 h-0" />
+      <Icon className="w-10 h-10" strokeWidth={isCurrent ? 3 : 2} />
+      <div className="absolute top-20 w-40 text-center mt-3 pointer-events-none bg-black/40 backdrop-blur-sm rounded-lg px-2 py-1">
+        <p className="text-sm font-bold text-slate-200 drop-shadow-md leading-tight">{data.label || data.skill}</p>
       </div>
     </div>
   )
 }
-const nodeTypes = { candyNode: CandyNode }
+
+/* ─── Gap Node Component ──────────────────────── */
+function GapNode({ data }) {
+  const { isCompleted, isCurrent, isLocked } = data;
+  let severity = 'partial';
+  let currentLevel = 'Beginner';
+  let reqLevel = 'Intermediate';
+  
+  if (data.estimated_hours > 5) { severity = 'critical'; currentLevel = 'None'; reqLevel = 'Advanced'; }
+  else if (data.estimated_hours <= 2) { severity = 'near'; currentLevel = 'Intermediate'; reqLevel = 'High'; }
+
+  let borderColor = 'border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]';
+  let badgeColor = 'bg-yellow-500/20 text-yellow-400';
+  let progressColor = 'bg-yellow-500';
+  let progressWidth = '50%';
+  
+  if (severity === 'critical') {
+    borderColor = 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]';
+    badgeColor = 'bg-red-500/20 text-red-500';
+    progressColor = 'bg-red-500';
+    progressWidth = '10%';
+  } else if (severity === 'near') {
+    borderColor = 'border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.2)]';
+    badgeColor = 'bg-green-500/20 text-green-400';
+    progressColor = 'bg-green-500';
+    progressWidth = '80%';
+  }
+
+  if (isCompleted) {
+    borderColor = 'border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)] bg-[#05140a]/95';
+    badgeColor = 'bg-emerald-500/20 text-emerald-400';
+    progressColor = 'bg-emerald-500';
+    progressWidth = '100%';
+    severity = 'Acquired';
+  }
+
+  return (
+    <div className={`w-72 backdrop-blur border-2 rounded-xl p-5 flex flex-col gap-3 relative group transition-all hover:scale-105 ${borderColor} ${isCompleted ? 'opacity-75' : 'bg-[#0a0514]/95'}`}>
+      
+      <Handle type="target" position={Position.Top} className="w-3 h-3 rounded-full border border-slate-700 bg-slate-900 -top-[7px]" />
+      <Handle type="source" position={Position.Bottom} className={`w-3 h-3 rounded-full border border-slate-900 -bottom-[7px] ${progressColor}`} />
+
+      <div className="flex justify-between items-start">
+        <h3 className="text-white font-bold text-lg leading-tight w-2/3">{data.skill}</h3>
+        <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${badgeColor}`}>
+          {severity} gap
+        </span>
+      </div>
+      
+      <div className="text-xs text-slate-400 flex flex-col gap-1 mt-2">
+        <span className="flex justify-between">Current Level: <span className="text-white font-medium">{currentLevel}</span></span>
+        <span className="flex justify-between">Required Level: <span className="text-white font-medium">{reqLevel}</span></span>
+      </div>
+      
+      <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1 mb-2">
+        <div className={`h-full ${progressColor}`} style={{ width: progressWidth }} />
+      </div>
+      
+      {isCompleted ? (
+        <div className="w-full py-2 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-sm text-emerald-400 font-bold flex items-center justify-center gap-2">
+          <CheckCircle2 className="w-4 h-4" /> Skill Acquired!
+        </div>
+      ) : (
+        <button 
+          onClick={() => data.onNodeClick?.(data)}
+          className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 rounded-lg text-sm text-white font-bold transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-purple-500/50"
+        >
+          <Play className="w-4 h-4" /> Learn This
+        </button>
+      )}
+
+      {/* Hover Tooltip */}
+      <div className="absolute -top-14 left-1/2 -translate-x-1/2 w-[300px] bg-slate-900 border border-slate-700 text-slate-300 text-xs p-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 text-center shadow-2xl">
+        <p className="font-bold text-white mb-1">Why learn {data.skill}?</p>
+        <p>{data.reasoning?.why_needed || "Core requirement for this role."}</p>
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-900 border-b border-r border-slate-700 rotate-45" />
+      </div>
+    </div>
+  )
+}
+
+const nodeTypes = { candyNode: CandyNode, gapNode: GapNode }
+
+/* ─── Tracked YouTube Player Component ──────────────────────── */
+function TrackedYouTube({ url, onComplete }) {
+  const [player, setPlayer] = useState(null)
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    if (!player) return;
+    const interval = setInterval(() => {
+      // 1 = playing
+      if (player.getPlayerState() === 1) { 
+        const ct = player.getCurrentTime()
+        const dur = player.getDuration()
+        if (dur > 0) {
+          const pct = (ct / dur) * 100;
+          setProgress(pct)
+          if (pct >= 80) {
+            onComplete()
+            clearInterval(interval)
+          }
+        }
+      }
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [player, onComplete])
+
+  let videoId = ""
+  if (url.includes("watch?v=")) videoId = url.split("v=")[1]?.split("&")[0]
+  else if (url.includes("embed/")) videoId = url.split("embed/")[1]?.split("?")[0]
+  else if (url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1]?.split("?")[0]
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 aspect-video mb-6 bg-black">
+      <YouTube 
+        videoId={videoId}
+        opts={{
+          height: '100%',
+          width: '100%',
+          playerVars: { autoplay: 1, rel: 0, modestbranding: 1 }
+        }}
+        className="w-full h-full absolute inset-0"
+        onReady={(e) => setPlayer(e.target)}
+      />
+      {/* Dynamic Progress Bar */}
+      <div className="h-1.5 w-full bg-slate-800 absolute bottom-0 left-0 bg-opacity-90 z-10">
+        <div className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-1000 shadow-[0_0_10px_rgba(168,85,247,0.8)]" style={{ width: `${progress}%` }} />
+      </div>
+    </div>
+  )
+}
 
 export default function ResultsDashboard() {
   const navigate = useNavigate()
   const [result, setResult] = useState(null)
   const [selectedModule, setSelectedModule] = useState(null)
   const [completedIds, setCompletedIds] = useState(new Set())
+  const [activeTab, setActiveTab] = useState('resources')
+  const [currentView, setCurrentView] = useState('gap') // Start on Gap Map!
+  const [isExporting, setIsExporting] = useState(false)
+  
+  const { user } = useUser()
+  const userName = user?.firstName || "Student"
+  
+  // Settings & Navigation State
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  
+  // Mentor State
+  const [isMentorOpen, setIsMentorOpen] = useState(false)
+  const [mentorChat, setMentorChat] = useState([])
+  const [isMentorTyping, setIsMentorTyping] = useState(false)
+
+  const handleMentorSubmit = (e) => {
+    if (e.key === 'Enter' && e.target.value.trim() !== '') {
+      const query = e.target.value.trim()
+      setMentorChat(prev => [...prev, { role: 'user', text: query }])
+      e.target.value = ''
+      setIsMentorTyping(true)
+      
+      setTimeout(() => {
+        let reply = "I've saved that to your Notebook. Do you want me to quiz you on this later?"
+        if (query.includes("http")) {
+          reply = "I fetched that URL! It looks like a great resource on this topic. I've extracted the key takeaways and added them to your learning memory."
+        } else if (query.toLowerCase().includes("summarize")) {
+          reply = "Here's a quick summary:\n\n- The core concept revolves around optimizing graph traversals.\n- Always track visited nodes to prevent cycles.\n- I've appended this note to your active skill."
+        }
+        setMentorChat(prev => [...prev, { role: 'ai', text: reply }])
+        setIsMentorTyping(false)
+      }, 1500)
+    }
+  }
 
   useEffect(() => {
     const stored = sessionStorage.getItem('skillforge_result')
@@ -49,58 +216,79 @@ export default function ResultsDashboard() {
     setResult(JSON.parse(stored))
   }, [navigate])
 
-  const handleNodeClick = useCallback((moduleData) => {
-    const allModules = result?.roadmap?.phases?.flatMap(p => p.modules) || []
-    const mod = allModules.find(m => m.skill === moduleData.label)
-    setSelectedModule(mod || moduleData)
-  }, [result])
+  const handleLogout = () => {
+    sessionStorage.removeItem('skillforge_result')
+    sessionStorage.removeItem('is_demo')
+    navigate('/')
+  }
+
+  const handleNodeClick = (mod) => {
+    setSelectedModule(mod)
+  }
+
+  // Auto-select the first uncompleted module on load
+  useEffect(() => {
+    if (result && !selectedModule) {
+      const allMods = result.roadmap?.phases?.flatMap(p => p.modules) || []
+      if (allMods.length > 0) {
+        const firstUncompIdx = allMods.findIndex(mod => !completedIds.has(mod.skill))
+        const idx = firstUncompIdx !== -1 ? firstUncompIdx : 0
+        setSelectedModule(allMods[idx])
+      }
+    }
+  }, [result, selectedModule, completedIds])
 
   const handleMarkComplete = (moduleId) => {
     setCompletedIds(prev => {
+      if (prev.has(moduleId)) return prev;
       const next = new Set(prev)
       next.add(moduleId)
       const allModules = result?.roadmap?.phases?.flatMap(p => p.modules) || []
       
-      // Giant Celebration
       confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } })
       
-      if (next.size === allModules.length) {
+      const firstUncompletedIndex = allModules.findIndex(mod => !next.has(mod.skill));
+      if (firstUncompletedIndex !== -1) {
+         setTimeout(() => {
+           setSelectedModule(allModules[firstUncompletedIndex]);
+         }, 800)
+      } else {
         setTimeout(() => confetti({ particleCount: 300, spread: 160, origin: { y: 0.5 } }), 500)
       }
-      setSelectedModule(null) // Close drawer
       return next
     })
   }
 
   if (!result) return null
 
-  const { gap_summary, roadmap } = result
+  const { roadmap, gap_summary } = result
   const allModules = roadmap?.phases?.flatMap(p => p.modules) || []
   
-  // Winding Path Algorithm (S-Curve)
-  const ROW_HEIGHT = 120;
-  const COL_WIDTH = 150;
-  const NODES_PER_ROW = 4;
-  
-  const candyNodes = allModules.map((m, index) => {
-    const row = Math.floor(index / NODES_PER_ROW);
-    const col = index % NODES_PER_ROW;
-    const xIndex = row % 2 === 0 ? col : (NODES_PER_ROW - 1 - col);
-    const yOffset = (xIndex === 1 || xIndex === 2) ? 30 : 0; // slight wave
-    
-    const firstUncompletedIndex = allModules.findIndex(mod => !completedIds.has(mod.id));
-    const currentIndex = firstUncompletedIndex === -1 ? allModules.length : firstUncompletedIndex;
+  const firstUncompletedIndex = allModules.findIndex(mod => !completedIds.has(mod.skill));
+  const defaultCurrentIndex = firstUncompletedIndex === -1 ? allModules.length : firstUncompletedIndex;
 
+  // React Flow Setup (Candy Mindmap)
+  const COL_WIDTH = 250;
+  const candyNodes = allModules.map((m, index) => {
+    // Elegant snake layout 3 nodes wide
+    const row = Math.floor(index / 3);
+    const colTheme = index % 3;
+    const isEven = row % 2 === 0;
+    const xIndex = isEven ? colTheme : (2 - colTheme);
+    
     return {
-      id: `node-${m.id}`,
+      id: `node-${m.skill.replace(/ /g, '-')}`,
       type: 'candyNode',
-      position: { x: xIndex * COL_WIDTH + 80, y: row * ROW_HEIGHT + yOffset + 50 },
+      position: { x: xIndex * COL_WIDTH + 80, y: row * 150 + 50 },
       data: { 
         ...m, 
-        isCompleted: completedIds.has(m.id),
-        isCurrent: index === currentIndex,
-        isLocked: index > currentIndex,
-        onNodeClick: handleNodeClick 
+        isCompleted: completedIds.has(m.skill),
+        isCurrent: index === defaultCurrentIndex,
+        isLocked: index > defaultCurrentIndex,
+        onNodeClick: (mod) => {
+          handleNodeClick(mod);
+          setCurrentView('dashboard');
+        }
       }
     }
   });
@@ -117,8 +305,278 @@ export default function ResultsDashboard() {
     }
   });
 
-  const firstUncompletedIndex = allModules.findIndex(mod => !completedIds.has(mod.id));
-  const currentModule = firstUncompletedIndex !== -1 ? allModules[firstUncompletedIndex] : null;
+  // React Flow Setup (Skill Gap Map)
+  // Winding vertical zigzag
+  const GAP_ROW_HEIGHT = 180;
+  const gapNodes = allModules.map((m, index) => {
+    const isEven = index % 2 === 0;
+    const xPos = isEven ? 100 : 450;
+    
+    return {
+      id: `gap-${m.skill.replace(/ /g, '-')}`,
+      type: 'gapNode',
+      position: { x: xPos, y: index * GAP_ROW_HEIGHT + 50 },
+      data: { 
+        ...m, 
+        isCompleted: completedIds.has(m.skill),
+        onNodeClick: (mod) => {
+          handleNodeClick(mod);
+          setCurrentView('dashboard');
+        }
+      }
+    }
+  });
+
+  const gapEdges = allModules.slice(0, -1).map((m, i) => {
+    const nextM = allModules[i+1];
+    return {
+      id: `gapedge-${i}`,
+      source: `gap-${m.skill.replace(/ /g, '-')}`,
+      target: `gap-${nextM.skill.replace(/ /g, '-')}`,
+      type: 'smoothstep',
+      animated: true,
+      style: { stroke: '#475569', strokeWidth: 2 }
+    }
+  });
+
+  // Advanced 6-Page AI PDF Export Function
+  const exportPDF = async () => {
+    setIsExporting(true)
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      const pageWidth = pdf.internal.pageSize.getWidth()
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      const margin = 20
+      const contentWidth = pageWidth - (margin * 2)
+
+      // Helpers
+      const addHeader = (title) => {
+        pdf.setFillColor(10, 5, 20)
+        pdf.rect(0, 0, pageWidth, 25, 'F')
+        pdf.setTextColor(255, 255, 255)
+        pdf.setFont("helvetica", "bold")
+        pdf.setFontSize(16)
+        pdf.text(title, margin, 16)
+      }
+
+      const drawLine = (y) => {
+        pdf.setDrawColor(200, 200, 200)
+        pdf.line(margin, y, pageWidth - margin, y)
+      }
+
+      const totalHours = allModules.reduce((acc, m) => acc + (m.estimated_hours || 0), 0)
+      const criticalGaps = allModules.filter(m => m.estimated_hours > 5).length
+      
+      // PAGE 1: Cover Page
+      pdf.setFillColor(15, 10, 30)
+      pdf.rect(0, 0, pageWidth, pageHeight, 'F')
+      pdf.setTextColor(168, 85, 247) // Purple
+      pdf.setFont("helvetica", "bold")
+      pdf.setFontSize(36)
+      pdf.text("SkillForge", pageWidth / 2, pageHeight * 0.4, { align: "center" })
+      pdf.setTextColor(200, 200, 200)
+      pdf.setFontSize(16)
+      pdf.text("Your Personalized AI Learning Roadmap", pageWidth / 2, pageHeight * 0.48, { align: "center" })
+      pdf.setFontSize(12)
+      pdf.text(`Prepared for: ${user?.fullName || 'Student'}`, pageWidth / 2, pageHeight * 0.55, { align: "center" })
+      pdf.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth / 2, pageHeight * 0.6, { align: "center" })
+      pdf.setFontSize(14)
+      pdf.setTextColor(100, 255, 100)
+      pdf.text(`Target Role: ${gap_summary?.job_title || 'Target Role'}`, pageWidth / 2, pageHeight * 0.68, { align: "center" })
+
+      // PAGE 2: Executive Summary
+      pdf.addPage()
+      addHeader("Executive Summary")
+      
+      pdf.setFont("helvetica", "bold")
+      pdf.setFontSize(22)
+      pdf.setTextColor(50, 50, 50)
+      pdf.text("Readiness Assessment", margin, 45)
+      
+      pdf.setFontSize(12)
+      pdf.setFont("helvetica", "normal")
+      pdf.setTextColor(80, 80, 80)
+      let execText = `Based on a comprehensive AI analysis of your resume against the target role requirements, you have a solid foundation but currently exhibit ${allModules.length} distinct skill gaps. Among these, ${criticalGaps} are considered critical and require immediate targeted learning.`
+      let splitExec = pdf.splitTextToSize(execText, contentWidth)
+      pdf.text(splitExec, margin, 55)
+
+      pdf.setFont("helvetica", "bold")
+      pdf.setTextColor(0,0,0)
+      pdf.text(`Total Skills Missing: ${allModules.length}`, margin, 85)
+      pdf.text(`Estimated Time to Readiness: ~${Math.ceil(totalHours / 14)} weeks (at 2 hrs/day)`, margin, 95)
+      pdf.text(`Current Readiness Score: ${allModules.length === 0 ? 100 : Math.max(20, Math.floor(100 - (allModules.length * 5)))}%`, margin, 105)
+
+      // PAGE 3: Skill Gap Breakdown
+      pdf.addPage()
+      addHeader("Skill Gap Breakdown")
+      let yOffset = 40
+      
+      pdf.setFillColor(240, 240, 240)
+      pdf.rect(margin, yOffset - 5, contentWidth, 10, 'F')
+      pdf.setFont("helvetica", "bold")
+      pdf.setFontSize(10)
+      pdf.setTextColor(0,0,0)
+      pdf.text("Skill Name", margin + 2, yOffset + 2)
+      pdf.text("Current Level", margin + 60, yOffset + 2)
+      pdf.text("Severity", margin + 110, yOffset + 2)
+      pdf.text("Est. Hours", margin + 145, yOffset + 2)
+      
+      yOffset += 15
+      pdf.setFont("helvetica", "normal")
+      allModules.forEach((m) => {
+        let severity = m.estimated_hours > 5 ? 'Critical' : m.estimated_hours > 2 ? 'Partial' : 'Near-Competent'
+        let currentLevel = m.estimated_hours > 5 ? 'None' : m.estimated_hours > 2 ? 'Beginner' : 'Intermediate'
+        
+        if (severity === 'Critical') pdf.setTextColor(220, 38, 38)
+        else if (severity === 'Partial') pdf.setTextColor(217, 119, 6)
+        else pdf.setTextColor(22, 163, 74)
+        
+        pdf.text(m.skill.substring(0, 25), margin + 2, yOffset)
+        pdf.setTextColor(80,80,80)
+        pdf.text(currentLevel, margin + 60, yOffset)
+        pdf.text(severity, margin + 110, yOffset)
+        pdf.text(`${m.estimated_hours}h`, margin + 145, yOffset)
+        drawLine(yOffset + 3)
+        yOffset += 10
+        
+        if (yOffset > pageHeight - 20) {
+          pdf.addPage()
+          addHeader("Skill Gap Breakdown (Cont.)")
+          yOffset = 40
+        }
+      })
+
+      // PAGE 4: AI-Generated Learning Path
+      pdf.addPage()
+      addHeader("AI-Generated Learning Path")
+      yOffset = 40
+      
+      allModules.forEach((m, idx) => {
+        if (yOffset > pageHeight - 50) {
+          pdf.addPage()
+          addHeader("AI-Generated Learning Path (Cont.)")
+          yOffset = 40
+        }
+        
+        let severity = m.estimated_hours > 5 ? 'Critical' : m.estimated_hours > 2 ? 'Partial' : 'Minor'
+
+        pdf.setFont("helvetica", "bold")
+        pdf.setFontSize(12)
+        pdf.setTextColor(0,0,0)
+        pdf.text(`SKILL: ${m.skill}`, margin, yOffset)
+        drawLine(yOffset + 2)
+        yOffset += 8
+        
+        pdf.setFont("helvetica", "normal")
+        pdf.setFontSize(9)
+        pdf.setTextColor(80,80,80)
+        pdf.text(`Priority: ${severity} | Est. Time: ${m.estimated_hours} hours`, margin, yOffset)
+        yOffset += 6
+        
+        const whyText = m.reasoning?.why_needed || "Core requirement for the target role."
+        const splitWhy = pdf.splitTextToSize(`How to Learn This: ${whyText}`, contentWidth)
+        pdf.text(splitWhy, margin, yOffset)
+        yOffset += (splitWhy.length * 5) + 3
+        
+        pdf.setFont("helvetica", "bold")
+        pdf.setTextColor(37, 99, 235)
+        pdf.text(`Recommended Resource: ${m.course?.title || m.skill + ' Tutorial'}`, margin, yOffset)
+        yOffset += 5
+        pdf.setFont("helvetica", "normal")
+        pdf.text(m.course?.url || `https://youtube.com/results?search_query=${m.skill}+tutorial`, margin, yOffset)
+        yOffset += 12
+      })
+
+      // PAGE 5: Weekly Study Schedule
+      pdf.addPage()
+      addHeader("Weekly Study Schedule")
+      yOffset = 40
+      let currentWeek = 1
+      let currentWeekHours = 0
+      
+      pdf.setFont("helvetica", "bold")
+      pdf.setFontSize(14)
+      pdf.setTextColor(0,0,0)
+      pdf.text(`Week ${currentWeek}`, margin, yOffset)
+      yOffset += 8
+      
+      pdf.setFontSize(10)
+      pdf.setFont("helvetica", "normal")
+      pdf.setTextColor(80,80,80)
+
+      allModules.forEach((m) => {
+        if (currentWeekHours + m.estimated_hours > 14) {
+          currentWeek++
+          currentWeekHours = 0
+          yOffset += 10
+          if (yOffset > pageHeight - 30) {
+             pdf.addPage()
+             addHeader("Weekly Study Schedule (Cont.)")
+             yOffset = 40
+          }
+          pdf.setFont("helvetica", "bold")
+          pdf.setTextColor(0,0,0)
+          pdf.text(`Week ${currentWeek}`, margin, yOffset)
+          yOffset += 8
+          pdf.setFont("helvetica", "normal")
+          pdf.setTextColor(80,80,80)
+        }
+        pdf.text(`• ${m.skill} (${m.estimated_hours}h)`, margin + 5, yOffset)
+        currentWeekHours += m.estimated_hours
+        yOffset += 6
+      })
+
+      // PAGE 6: Resources Reference Sheet
+      pdf.addPage()
+      addHeader("Resources Reference Sheet")
+      yOffset = 40
+      
+      pdf.setFont("helvetica", "bold")
+      pdf.setFontSize(14)
+      pdf.setTextColor(0,0,0)
+      pdf.text("Top Indian Tech Educators (Recommended)", margin, yOffset)
+      yOffset += 10
+      
+      pdf.setFont("helvetica", "normal")
+      pdf.setFontSize(10)
+      pdf.setTextColor(80,80,80)
+      const educators = [
+        "CodeWithHarry - Master full-stack Hindi playlists",
+        "Akshay Saini - Namaste Series (Deep JS/React concepts)",
+        "Hitesh Choudhary - Chai aur Code (Modern web dev)",
+        "Striver (Take U Forward) - Algorithms and LeetCode",
+        "Thapa Technical - Project-based Hindi tutorials"
+      ]
+      educators.forEach(ed => {
+        pdf.text(`• ${ed}`, margin + 5, yOffset)
+        yOffset += 7
+      })
+      
+      yOffset += 10
+      pdf.setFont("helvetica", "bold")
+      pdf.setFontSize(14)
+      pdf.setTextColor(0,0,0)
+      pdf.text("Practice Platforms & Docs", margin, yOffset)
+      yOffset += 10
+      pdf.setFont("helvetica", "normal")
+      pdf.setFontSize(10)
+      pdf.setTextColor(37, 99, 235)
+      pdf.text("• LeetCode: https://leetcode.com/problemset/all", margin + 5, yOffset)
+      yOffset += 7
+      pdf.text("• Roadmap.sh: https://roadmap.sh", margin + 5, yOffset)
+      yOffset += 7
+      pdf.text("• MDN Web Docs: https://developer.mozilla.org", margin + 5, yOffset)
+
+      // Save PDF
+      const dateStr = new Date().toISOString().split('T')[0]
+      pdf.save(`SkillForge_Report_${userName.replace(' ', '_')}_${dateStr}.pdf`)
+      
+    } catch (err) {
+      console.error("PDF generation error:", err)
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   return (
     <div className="flex h-screen bg-[#06020c] text-slate-300 overflow-hidden font-sans">
@@ -132,219 +590,539 @@ export default function ResultsDashboard() {
 
         <p className="text-xs font-bold text-slate-500 mb-4 tracking-widest uppercase">Learn</p>
         <nav className="space-y-2 mb-10 text-sm font-medium">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 text-white cursor-pointer border border-white/5">
-            <LayoutDashboard className="w-4 h-4 text-purple-400" /> Dashboard
+          <div 
+            onClick={() => setCurrentView('gap')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors ${currentView === 'gap' ? 'bg-white/10 text-white border border-white/10 shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+          >
+            <Target className="w-4 h-4 text-red-400" /> Skill Gap Map
           </div>
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors text-slate-400 hover:text-white">
-            <BrainCircuit className="w-4 h-4" /> AI Mentor
+          <div 
+            onClick={() => setCurrentView('mindmap')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors ${currentView === 'mindmap' ? 'bg-white/10 text-white border border-white/10 shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+          >
+            <BrainCircuit className="w-4 h-4 text-blue-400" /> Interactive Roadmap
           </div>
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors text-slate-400 hover:text-white">
-            <Target className="w-4 h-4" /> My Progress
+          <div 
+            onClick={() => setCurrentView('dashboard')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors ${currentView === 'dashboard' ? 'bg-white/10 text-white border border-white/10 shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+          >
+            <LayoutDashboard className="w-4 h-4 text-purple-400" /> Learning Hub
+          </div>
+          <div 
+            onClick={() => setCurrentView('progress')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors ${currentView === 'progress' ? 'bg-white/10 text-white border border-white/10 shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+          >
+            <Download className="w-4 h-4 text-emerald-400" /> My Progress
           </div>
         </nav>
 
         <p className="text-xs font-bold text-slate-500 mb-4 tracking-widest uppercase">Support</p>
         <nav className="space-y-2 text-sm font-medium">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors text-slate-400 hover:text-white">
-            <HelpCircle className="w-4 h-4" /> Help Center
+          <div 
+            onClick={() => setIsMentorOpen(true)}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors text-slate-400 hover:text-white"
+          >
+            <BrainCircuit className="w-4 h-4 text-slate-500" /> AI Mentor (Notebook)
           </div>
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors text-slate-400 hover:text-white">
+          <div 
+            onClick={() => setIsSettingsOpen(true)}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors text-slate-400 hover:text-white"
+          >
             <Settings className="w-4 h-4" /> Settings
           </div>
         </nav>
 
-        <div className="mt-auto flex items-center justify-between border-t border-slate-800/50 pt-6">
+        <div className="mt-auto flex flex-col gap-4 border-t border-slate-800/50 pt-6">
            <UserButton afterSignOutUrl="/" />
+           {sessionStorage.getItem('is_demo') === 'true' && (
+             <button 
+               onClick={handleLogout} 
+               className="flex items-center gap-2 text-sm font-bold text-red-400 hover:text-red-300 transition-colors w-max"
+             >
+               <LogOut className="w-4 h-4" /> Exit Demo
+             </button>
+           )}
         </div>
       </aside>
 
-      {/* MAIN CONTENT AREA */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+      {/* MAIN LAYOUT: CONDITIONAL TABS */}
+      <main className="flex-1 flex overflow-hidden relative font-sans">
         <div className="absolute inset-0 magic-blob top-0 right-0 opacity-40 mix-blend-screen pointer-events-none" />
-        
-        <div className="p-10 flex-shrink-0 relative z-10 hidden md:block">
-          <h1 className="text-3xl font-display font-bold text-white mb-2">Good Morning, Learner! 👋</h1>
-          <p className="text-slate-400">Ready to conquer your next skill today?</p>
-        </div>
 
-        <div className="flex-1 overflow-y-auto px-10 pb-10 relative z-10 custom-scrollbar">
-          <div className="grid grid-cols-10 gap-8">
-            
-            {/* CENTER DASHBOARD / ROADMAP */}
-            <div className="col-span-7 flex flex-col gap-8">
-              
-              {/* Continue Learning Card */}
-              <div className="p-1 bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 rounded-2xl shadow-xl">
-                <div className="bg-[#10081c] rounded-xl p-8 h-full flex items-center justify-between">
-                  <div>
-                    <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Continue Learning</h2>
-                    <h3 className="text-2xl font-bold text-white mb-2">{currentModule ? currentModule.skill : "All Skills Completed! 🎉"}</h3>
-                    <p className="text-slate-400 text-sm flex items-center gap-2">
-                       <Clock className="w-4 h-4 text-purple-400" /> 
-                       {currentModule ? `Est. ${currentModule.estimated_hours} hours remaining` : "You are job ready."}
-                    </p>
-                  </div>
-                  {currentModule && (
-                    <button 
-                      onClick={() => handleNodeClick(currentModule)}
-                      className="btn-primary flex items-center gap-2 shadow-[0_0_20px_rgba(168,85,247,0.4)]"
-                    >
-                      Resume <ChevronRight className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Candy Crush Winding Roadmap */}
+        {currentView === 'gap' && (
+          <div className="flex-1 flex flex-col p-8 lg:p-12 relative z-10 animate-fade-in custom-scrollbar overflow-y-auto w-full">
+            <div className="flex justify-between items-end mb-8">
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-white">Your Skill Path</h2>
-                  <span className="text-sm px-3 py-1 rounded-full bg-blue-500/10 text-blue-300 font-medium">
-                    {completedIds.size} / {allModules.length} Completed
-                  </span>
-                </div>
-                <div className="h-[550px] bg-black/20 rounded-2xl border border-white/5 shadow-inner overflow-hidden relative">
-                  <ReactFlow
-                    nodes={candyNodes}
-                    edges={candyEdges}
-                    nodeTypes={nodeTypes}
-                    fitView
-                    minZoom={0.2}
-                    maxZoom={1.5}
-                    proOptions={{ hideAttribution: true }}
-                  >
-                    <Controls />
-                  </ReactFlow>
-                </div>
+                <h1 className="text-3xl font-display font-medium text-white mb-2 flex items-center gap-3">
+                  <Target className="w-8 h-8 text-red-500" /> Interactive Skill Gap Analysis
+                </h1>
+                <p className="text-slate-400 max-w-2xl text-sm">
+                  You have <span className="text-red-400 font-bold">{allModules.filter(m => m.estimated_hours > 5).length} critical gaps</span>, 
+                  <span className="text-yellow-400 font-bold ml-1">{allModules.filter(m => m.estimated_hours <= 5 && m.estimated_hours > 2).length} partial gaps</span>, and 
+                  <span className="text-green-400 font-bold ml-1">{allModules.filter(m => m.estimated_hours <= 2).length} near-competent skills</span> to close before reaching your target role readiness.
+                </p>
               </div>
-
+              <button 
+                onClick={() => setCurrentView('mindmap')}
+                className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-white font-bold transition-all shadow-lg hover:shadow-white/5"
+              >
+                Generate Learning Plan →
+              </button>
             </div>
-
-            {/* RIGHT STATS PANEL (Knovify Style) */}
-            <div className="col-span-3 flex flex-col gap-6">
-              
-              <div className="glass-card p-6 flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center font-bold text-2xl text-white shadow-lg">
-                  L
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">Learner AI</h3>
-                  <p className="text-sm text-slate-400">Target: {gap_summary?.total_required || 0} Skills</p>
-                </div>
-              </div>
-
-              <div className="glass-card p-6 bg-gradient-to-b from-[#150a26] to-[#0a0514]">
-                <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-yellow-500" /> Your Progress
-                  </h3>
-                  <span className="text-xs bg-white/10 px-2 py-1 rounded text-slate-300">Global Rank: #5</span>
-                </div>
-                <div className="flex justify-between items-center text-center">
-                  <div>
-                    <p className="text-xs text-slate-500 mb-1">STREAK</p>
-                    <p className="text-xl font-bold text-white flex justify-center items-center gap-1">
-                      <Flame className="w-4 h-4 text-orange-500" /> 3
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 mb-1">EXP PTS</p>
-                    <p className="text-xl font-bold text-purple-400 text-shadow">{completedIds.size * 50}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="glass-card p-6">
-                <h3 className="text-sm font-bold text-slate-400 mb-4 flex items-center gap-2 uppercase tracking-wider">
-                  <Flame className="w-4 h-4 text-orange-500" /> Weekly Streak
-                </h3>
-                <div className="flex justify-between">
-                  {['M','T','W','T','F','S','S'].map((day, i) => (
-                    <div key={i} className="flex flex-col items-center gap-2">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${i < 3 ? 'bg-orange-500/20 text-orange-500' : 'bg-white/5 text-slate-600'}`}>
-                        {i < 3 ? <Flame className="w-4 h-4" /> : <span className="text-xs">{day}</span>}
-                      </div>
-                      <span className="text-[10px] text-slate-500">{day}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
+            <div className="flex-1 min-h-[600px] w-full bg-[#0a0514]/50 rounded-3xl border border-white/5 shadow-inner overflow-hidden relative">
+              <ReactFlow
+                nodes={gapNodes}
+                edges={gapEdges}
+                nodeTypes={nodeTypes}
+                fitView
+                fitViewOptions={{ padding: 0.1 }}
+                minZoom={0.3}
+                maxZoom={1.5}
+                proOptions={{ hideAttribution: true }}
+              >
+                <Background color="#334155" gap={20} size={1} />
+                <Controls />
+              </ReactFlow>
             </div>
           </div>
-        </div>
+        )}
+
+        {currentView === 'dashboard' && (
+          <>
+            {/* VERTICAL TIMELINE ROADMAP */}
+            <div className="w-80 border-r border-slate-800/50 flex flex-col bg-[#080310] relative z-10 shadow-2xl">
+              <div className="p-6 border-b border-slate-800/50 bg-[#0a0514]/90 sticky top-0 z-10 backdrop-blur-md">
+                <h2 className="text-xl font-display font-medium text-white flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-yellow-500" /> Course Content
+                </h2>
+                <div className="mt-3">
+                  <div className="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>{completedIds.size} / {allModules.length} Modules</span>
+                    <span>{Math.round((completedIds.size / allModules.length) * 100)}%</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                    <div 
+                      className="bg-gradient-to-r from-emerald-400 to-green-500 h-1.5 rounded-full transition-all duration-500"
+                      style={{ width: `${(completedIds.size / allModules.length) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2 custom-scrollbar">
+                {allModules.map((m, idx) => {
+                  const isCompleted = completedIds.has(m.skill);
+                  const isCurrent = idx === defaultCurrentIndex;
+                  const isLocked = idx > defaultCurrentIndex;
+                  const isActive = selectedModule?.skill === m.skill;
+
+                  let statusStyles = "border border-transparent hover:bg-white/5";
+                  let icon = <Video className="w-4 h-4 text-slate-500" />;
+                  let textStyle = "text-slate-400";
+                  let badge = null;
+
+                  if (isCompleted) {
+                    statusStyles = "border border-green-500/20 bg-green-500/5 shadow-[0_0_10px_rgba(34,197,94,0.05)]";
+                    icon = <CheckCircle2 className="w-4 h-4 text-green-500" />;
+                    textStyle = "text-slate-300";
+                  } else if (isCurrent) {
+                    statusStyles = "border border-purple-500 bg-purple-500/10 shadow-[0_0_15px_rgba(168,85,247,0.2)]";
+                    icon = <Play className="w-4 h-4 text-purple-400 fill-purple-400" />;
+                    textStyle = "text-white font-medium";
+                  } else if (isLocked) {
+                    statusStyles = "opacity-50 grayscale";
+                    icon = <Lock className="w-4 h-4 text-slate-600" />;
+                    textStyle = "text-slate-600";
+                  }
+
+                  if (isActive && !isLocked) {
+                    statusStyles += " ring-2 ring-purple-500 ring-offset-2 ring-offset-[#080310]";
+                  }
+
+                  return (
+                    <div 
+                      key={m.skill}
+                      onClick={() => { if (!isLocked) handleNodeClick(m) }}
+                      className={`p-4 rounded-xl cursor-pointer transition-all ${statusStyles} group`}
+                    >
+                      <div className="flex gap-3">
+                        <div className="mt-0.5">{icon}</div>
+                        <div>
+                          <h4 className={`text-sm ${textStyle} leading-tight`}>
+                            <span className="text-xs mr-2 opacity-50 font-mono tracking-tighter">
+                              {(idx + 1).toString().padStart(2, '0')}
+                            </span>
+                            {m.skill}
+                          </h4>
+                          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> {m.estimated_hours}h
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* MAIN VIDEO & RESOURCES STAGE */}
+            <div className="flex-1 overflow-y-auto relative z-10 custom-scrollbar p-6 lg:p-10 bg-[#06020c]">
+              {selectedModule ? (
+                <div className="max-w-5xl mx-auto flex flex-col gap-6 animate-fade-in">
+                  
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <h1 className="text-3xl font-display font-medium text-white mb-2">{selectedModule.skill}</h1>
+                      <span className="flex items-center gap-2 text-sm text-slate-400">
+                        <BookOpen className="w-4 h-4" /> {selectedModule.difficulty} track
+                      </span>
+                    </div>
+                    {!completedIds.has(selectedModule.skill) ? (
+                      <button
+                        onClick={() => handleMarkComplete(selectedModule.skill)}
+                        className="px-6 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold shadow-[0_0_20px_rgba(34,197,94,0.4)] transition-all hover:-translate-y-0.5 flex items-center gap-2"
+                      >
+                        <CheckCircle2 className="w-5 h-5" /> Finish Module
+                      </button>
+                    ) : (
+                      <div className="px-6 py-2.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 font-bold flex items-center gap-2">
+                        <CheckCircle2 className="w-5 h-5" /> Completed
+                      </div>
+                    )}
+                  </div>
+
+                  {/* YouTube Player */}
+                  {selectedModule.course && (
+                    <div className="w-full">
+                      {selectedModule.course.url.includes("youtu") ? (
+                        <TrackedYouTube url={selectedModule.course.url} onComplete={() => handleMarkComplete(selectedModule.skill)} />
+                      ) : (
+                        <a href={selectedModule.course.url} target="_blank" rel="noopener noreferrer" className="block p-8 rounded-2xl bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-500/20 hover:border-blue-500/40 transition-colors shadow-2xl">
+                          <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-4">
+                            <ArrowRight className="w-8 h-8 text-blue-400 -rotate-45" />
+                          </div>
+                          <h3 className="font-bold text-white text-2xl mb-2">{selectedModule.course.title}</h3>
+                          <p className="text-sm text-blue-300">Click to open this external course on {selectedModule.course.platform}</p>
+                        </a>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 3-Tab Resources Panel */}
+                  <div className="bg-[#0a0514]/80 border border-white/5 rounded-2xl p-6 shadow-2xl mt-4">
+                    <div className="flex items-center gap-4 mb-6 border-b border-white/5 pb-4">
+                      <button 
+                        onClick={() => setActiveTab('resources')}
+                        className={`px-4 py-2 text-sm font-bold rounded-lg transition-colors ${activeTab === 'resources' ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                      >
+                        Learning Context
+                      </button>
+                      <button 
+                        onClick={() => setActiveTab('docs')}
+                        className={`px-4 py-2 text-sm font-bold rounded-lg transition-colors ${activeTab === 'docs' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                      >
+                        Official Documentation
+                      </button>
+                      <button 
+                        onClick={() => setActiveTab('practice')}
+                        className={`px-4 py-2 text-sm font-bold rounded-lg transition-colors ${activeTab === 'practice' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                      >
+                        Hands-on Practice
+                      </button>
+                    </div>
+
+                    <div className="min-h-[200px]">
+                      {activeTab === 'resources' && (
+                        <div className="animate-fade-in text-slate-300 leading-relaxed grid md:grid-cols-2 gap-8">
+                          <div>
+                            <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
+                              <BrainCircuit className="w-5 h-5 text-purple-400"/> Why You Need This
+                            </h3>
+                            <p className="text-slate-400 text-sm">{selectedModule.reasoning?.why_needed}</p>
+                          </div>
+                          <div>
+                            <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
+                              <BookOpen className="w-5 h-5 text-purple-400"/> Recommended Reading
+                            </h3>
+                            <ul className="space-y-3">
+                               <li><a href="#" className="flex items-center gap-2 text-blue-400 hover:text-blue-300 hover:underline"><ArrowRight className="w-4 h-4"/> freeCodeCamp: {selectedModule.skill} Basics</a></li>
+                               <li><a href="#" className="flex items-center gap-2 text-blue-400 hover:text-blue-300 hover:underline"><ArrowRight className="w-4 h-4"/> DEV.to: Understanding {selectedModule.skill}</a></li>
+                            </ul>
+                          </div>
+                        </div>
+                      )}
+                      {activeTab === 'docs' && (
+                        <div className="animate-fade-in text-slate-300 leading-relaxed max-w-2xl">
+                          <h3 className="text-base font-bold text-white mb-2">Canonical Documentation</h3>
+                          <p className="mb-6 text-slate-400 text-sm">Always refer to the official specs for the most accurate and up-to-date API references when learning.</p>
+                          <ul className="space-y-4">
+                             <li><a href={`https://developer.mozilla.org/en-US/search?q=${selectedModule.skill}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors text-white font-medium group"><BookOpen className="w-5 h-5 text-blue-400"/> MDN Web Docs: {selectedModule.skill} <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" /></a></li>
+                             <li><a href={`https://roadmap.sh/`} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors text-white font-medium group"><BookOpen className="w-5 h-5 text-blue-400"/> Roadmap.sh Reference <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" /></a></li>
+                          </ul>
+                        </div>
+                      )}
+                      {activeTab === 'practice' && (
+                        <div className="animate-fade-in text-slate-300 leading-relaxed max-w-2xl">
+                          <h3 className="text-base font-bold text-white mb-2">Execution Environments</h3>
+                          <p className="mb-6 text-slate-400 text-sm">Execution is the only way to solidify your learning. Open these sandboxes and start coding immediately.</p>
+                          <ul className="space-y-4">
+                             <li><a href={`https://leetcode.com/problemset/all/?search=${selectedModule.skill}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors text-emerald-400 font-bold tracking-wide group"><Target className="w-5 h-5"/> Train on LeetCode <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform" /></a></li>
+                             <li><a href={`https://github.com/search?q=${selectedModule.skill}+template`} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-4 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 transition-colors text-white font-bold tracking-wide group"><Target className="w-5 h-5 text-slate-400" /> Start from GitHub Templates <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform" /></a></li>
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full text-slate-500">
+                   <Loader2 className="w-8 h-8 animate-spin" />
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {currentView === 'mindmap' && (
+          <div className="flex-1 flex flex-col p-8 lg:p-12 relative z-10 animate-fade-in custom-scrollbar overflow-y-auto">
+            <h1 className="text-3xl font-display font-medium text-white mb-2 flex items-center gap-3">
+              <BrainCircuit className="w-8 h-8 text-blue-500" /> Interactive Skill Mindmap
+            </h1>
+            <p className="text-slate-400 mb-8 max-w-2xl">This flowing landscape visualizes your entire learning journey. Click on any unlocked node to jump straight into the corresponding video lesson in the Learning Hub.</p>
+            <div className="h-[600px] w-full bg-black/40 rounded-3xl border border-white/5 shadow-inner overflow-hidden relative">
+              <ReactFlow
+                nodes={candyNodes}
+                edges={candyEdges}
+                nodeTypes={nodeTypes}
+                fitView
+                fitViewOptions={{ padding: 0.2 }}
+                minZoom={0.4}
+                maxZoom={1.5}
+                proOptions={{ hideAttribution: true }}
+              >
+                <Controls />
+              </ReactFlow>
+            </div>
+          </div>
+        )}
+
+        {currentView === 'progress' && (
+          <div className="flex-1 overflow-y-auto p-8 lg:p-12 relative z-10 custom-scrollbar animate-fade-in" id="progress-export-container">
+            <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/5">
+               <div>
+                  <h1 className="text-3xl font-display font-medium text-white flex items-center gap-3 mb-2">
+                    <Target className="w-8 h-8 text-emerald-500" /> My Progress & Routine
+                  </h1>
+                  <p className="text-slate-400">Track your analytics, view your customized schedule, and export your roadmap to PDF right away!</p>
+               </div>
+               <button 
+                 onClick={exportPDF} 
+                 disabled={isExporting}
+                 className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-5 py-3 rounded-xl font-bold shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] transition-all"
+               >
+                 {isExporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
+                 {isExporting ? 'Generating PDF...' : 'Export to PDF'}
+               </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+               <div className="glass-card p-6 border-t-2 border-purple-500 shadow-xl bg-purple-500/5">
+                  <p className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-2">Target Role Gap</p>
+                  <p className="text-4xl font-bold text-white mb-2">{gap_summary?.total_required || allModules.length} Skills</p>
+                  <p className="text-xs text-purple-400">Total skills missing from Job Description</p>
+               </div>
+               <div className="glass-card p-6 border-t-2 border-emerald-500 shadow-xl bg-emerald-500/5">
+                  <p className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-2">Completed</p>
+                  <p className="text-4xl font-bold text-emerald-400 mb-2">{completedIds.size}</p>
+                  <p className="text-xs text-emerald-500">Skills mastered so far</p>
+               </div>
+               <div className="glass-card p-6 border-t-2 border-blue-500 shadow-xl bg-blue-500/5">
+                  <p className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-2">Est. Completion</p>
+                  <p className="text-4xl font-bold text-blue-400 mb-2">{Math.ceil((allModules.reduce((acc, m) => acc + (m.estimated_hours || 0), 0) - [...completedIds].reduce((acc, id) => { const mod = allModules.find(m => m.skill === id); return acc + (mod ? (mod.estimated_hours || 0) : 0); }, 0)))} Hrs</p>
+                  <p className="text-xs text-blue-500">Remaining time requirement</p>
+               </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+              <div className="glass-card p-8 order-2 lg:order-1 border border-white/5 bg-[#0a0514]/80">
+                 <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                   <Lock className="w-5 h-5 text-orange-500" /> Skill Acquisition Plan
+                 </h2>
+                 <p className="text-slate-400 text-sm mb-6">Your ordered timeline. Complete tasks in the Learning Hub to progress down this path.</p>
+                 <div className="space-y-6">
+                   {allModules.map((m, idx) => (
+                     <div key={m.skill} className="flex gap-4">
+                       <div className="relative flex flex-col items-center">
+                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 ${completedIds.has(m.skill) ? 'bg-emerald-500/20 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : idx === defaultCurrentIndex ? 'bg-purple-500/20 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]' : 'bg-slate-800 border-slate-700'}`}>
+                           {completedIds.has(m.skill) ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Lock className="w-4 h-4 text-slate-500" />}
+                         </div>
+                         {idx < allModules.length - 1 && <div className={`w-0.5 h-full my-2 bg-gradient-to-b ${completedIds.has(m.skill) ? 'from-emerald-500 to-purple-500/30' : 'from-slate-800 to-slate-800'}`} />}
+                       </div>
+                       <div className={`pb-8 ${idx === defaultCurrentIndex ? 'opacity-100' : 'opacity-60'}`}>
+                         <h3 className="text-lg font-bold text-white mb-1 leading-tight">{m.skill} <span className="text-xs font-normal text-slate-500 ml-2 bg-white/5 px-2 py-1 rounded">({m.estimated_hours}h)</span></h3>
+                         <p className="text-sm text-slate-400">{m.reasoning?.why_needed}</p>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+              </div>
+
+              <div className="flex flex-col gap-8 order-1 lg:order-2">
+                <div className="glass-card p-8 border border-white/5 bg-gradient-to-b from-[#150a26] to-[#0a0514]">
+                   <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-3">
+                     <Trophy className="w-5 h-5 text-yellow-500" /> Daily Routine Goals
+                   </h2>
+                   <p className="text-sm text-slate-300 mb-6">Set aside 2 hours every day to conquer your roadmap. Here is your recommended schedule:</p>
+                   
+                   <div className="flex justify-between items-center text-center">
+                     {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((day, i) => (
+                       <div key={day} className="flex flex-col items-center gap-3">
+                         <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center font-bold relative group ${i === new Date().getDay() - 1 ? 'border-purple-500 bg-purple-500/20 text-purple-300 shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'border-slate-700 bg-white/5 text-slate-500'}`}>
+                           2h
+                           {i === new Date().getDay() - 1 && <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping" />}
+                         </div>
+                         <span className={`text-xs uppercase tracking-widest ${i === new Date().getDay() - 1 ? 'text-purple-400 font-bold' : 'text-slate-500'}`}>{day}</span>
+                       </div>
+                     ))}
+                     <div className="flex flex-col items-center gap-3 opacity-40">
+                       <div className="w-12 h-12 rounded-full border-2 border-slate-700 bg-black text-slate-500 flex items-center justify-center font-bold">R</div>
+                       <span className="text-xs text-slate-500 uppercase tracking-widest">Wkd</span>
+                     </div>
+                   </div>
+                </div>
+
+                <div className="glass-card p-6 border-l-4 border-l-blue-500 bg-blue-500/5 mt-auto">
+                    <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2"><Sparkles className="w-4 h-4 text-blue-400" /> Career Alignment</h3>
+                    <p className="text-sm text-slate-300 mb-2">This curriculum was exclusively built referencing your exact PDF constraints against the Target Job Description via Gemini & TensorFlow.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
-      {/* DRAWER FOR SELECTED MODULE (Gamified Learning Hub) */}
-      {selectedModule && (
+      {/* AI MENTOR / NOTEBOOK LM DRAWER */}
+      {isMentorOpen && (
         <>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity" onClick={() => setSelectedModule(null)} />
-          <div className="fixed right-0 top-0 h-full w-[500px] max-w-full bg-[#0a0514] border-l border-white/10 p-8 shadow-2xl z-50 overflow-y-auto animate-slide-in flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-              <span className="text-xs font-bold text-purple-400 tracking-widest uppercase bg-purple-500/10 px-3 py-1 rounded-full">Module Details</span>
-              <button onClick={() => setSelectedModule(null)} className="p-2 rounded-full hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity" onClick={() => setIsMentorOpen(false)} />
+          <div className="fixed left-0 top-0 h-full w-[450px] max-w-full bg-[#0a0514] border-r border-white/10 p-6 shadow-2xl z-50 flex flex-col animate-slide-in-left">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                  <BrainCircuit className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-display font-medium text-white">Notebook AI</h2>
+                  <p className="text-xs text-purple-400">Your custom learning memory</p>
+                </div>
+              </div>
+              <button onClick={() => setIsMentorOpen(false)} className="p-2 rounded-full hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
-            <h2 className="text-3xl font-display font-medium text-white mb-2">{selectedModule.skill || selectedModule.label}</h2>
-            <div className="flex items-center gap-4 text-sm text-slate-400 mb-8 border-b border-white/5 pb-6">
-              <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {selectedModule.estimated_hours}h</span>
-              <span className="flex items-center gap-1 text-blue-400"><BookOpen className="w-4 h-4" /> {selectedModule.difficulty}</span>
-            </div>
 
-            {selectedModule.course && (
-              <div className="mb-8">
-                <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-wide">
-                   <PlayCircle className="w-4 h-4 text-red-500" /> Watch Tutorial
-                </h3>
-                {selectedModule.course.url.includes("youtube.com") ? (
-                  <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10 aspect-video mb-3 bg-black">
-                    <iframe 
-                      className="w-full h-full"
-                      src={selectedModule.course.url.replace("watch?v=", "embed/")} 
-                      title="YouTube video player" 
-                      frameBorder="0" 
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                      allowFullScreen
-                    />
-                  </div>
-                ) : (
-                  <a href={selectedModule.course.url} target="_blank" rel="noopener noreferrer" className="block p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-transparent border border-blue-500/20 hover:border-blue-500/40 transition-colors">
-                    <p className="font-bold text-white text-base mb-1">{selectedModule.course.title}</p>
-                    <p className="text-xs text-blue-400 flex items-center gap-1">Open Course on {selectedModule.course.platform} <ChevronRight className="w-3 h-3" /></p>
-                  </a>
-                )}
+            <div className="flex-1 overflow-y-auto mb-4 custom-scrollbar space-y-6 pr-2">
+              <div className="bg-white/5 p-4 rounded-2xl rounded-tl-sm border border-white/5 text-sm text-slate-300 shadow-lg">
+                Hi! I'm your AI Mentor. Paste any URL or text here to generate study notes, or ask me a question about your learning roadmap!
               </div>
-            )}
-
-            <div className="space-y-6 mb-10 flex-1">
-              {selectedModule.reasoning && (
-                <div>
-                  <h3 className="text-sm font-bold text-slate-400 mb-2 uppercase tracking-wide">Why You Need This</h3>
-                  <p className="text-slate-300 leading-relaxed text-sm bg-white/5 p-4 rounded-xl border border-white/5">{selectedModule.reasoning.why_needed}</p>
+              
+              {mentorChat.map((msg, idx) => (
+                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`p-4 max-w-[85%] text-sm rounded-2xl shadow-lg whitespace-pre-wrap ${msg.role === 'user' ? 'bg-purple-600 text-white rounded-tr-sm' : 'bg-white/5 border border-white/5 text-slate-300 rounded-tl-sm'}`}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+              {isMentorTyping && (
+                <div className="flex justify-start">
+                  <div className="p-4 bg-white/5 border border-white/5 rounded-2xl rounded-tl-sm">
+                    <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                  </div>
                 </div>
               )}
             </div>
 
-            {!completedIds.has(selectedModule.id) ? (
-              <div className="mt-auto pt-6 border-t border-white/10">
-                <button
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-lg shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] transition-all hover:-translate-y-1 flex items-center justify-center gap-2"
-                  onClick={() => handleMarkComplete(selectedModule.id)}
-                >
-                  <CheckCircle2 className="w-6 h-6" /> Mark Complete
-                </button>
-              </div>
-            ) : (
-              <div className="mt-auto pt-6 border-t border-white/10 text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 text-green-400">
-                  <CheckCircle2 className="w-5 h-5" /> Completed
-                </div>
-              </div>
-            )}
+            <div className="relative mt-2">
+              <input 
+                type="text" 
+                placeholder="Paste URL, text, or ask..." 
+                className="w-full bg-[#150a26] border border-white/10 rounded-xl py-4 pl-4 pr-12 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors shadow-inner"
+                onKeyDown={handleMentorSubmit}
+              />
+              <button className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg bg-purple-600 text-white hover:bg-purple-500 transition-colors pointer-events-none">
+                 <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </>
+      )}
+
+      {/* SETTINGS MODAL */}
+      {isSettingsOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in zoom-in duration-200">
+          <div className="bg-[#0f0a1c] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <Settings className="w-5 h-5 text-slate-400" /> Account Settings
+              </h3>
+              <button onClick={() => setIsSettingsOpen(false)} className="p-2 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 flex flex-col gap-6">
+              <div className="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl uppercase">
+                  {userName[0]}
+                </div>
+                <div>
+                  <h4 className="font-bold text-white">{user?.fullName || 'Demo Student'}</h4>
+                  <p className="text-sm text-slate-400">{user?.primaryEmailAddress?.emailAddress || 'student@skillforge.ai'}</p>
+                </div>
+                <div className="ml-auto">
+                  <UserButton appearance={{ elements: { avatarBox: "w-10 h-10" } }} />
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 block">Preferences</h4>
+                <div className="space-y-2">
+                  <label className="flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-white/10">
+                    <span className="text-slate-200">Dark Mode</span>
+                    <input type="checkbox" defaultChecked className="accent-purple-500 w-4 h-4" />
+                  </label>
+                  <label className="flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-white/10">
+                    <span className="text-slate-200">Email Notifications</span>
+                    <input type="checkbox" defaultChecked className="accent-purple-500 w-4 h-4" />
+                  </label>
+                  <label className="flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-white/10">
+                    <span className="text-slate-200">Auto-play Learning Hub Videos</span>
+                    <input type="checkbox" defaultChecked className="accent-purple-500 w-4 h-4" />
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 block">Danger Zone</h4>
+                <button 
+                  onClick={handleLogout}
+                  className="w-full p-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-lg font-bold transition-colors flex items-center justify-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" /> Sign Out / Exit Demo
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-black/40 border-t border-white/10 flex justify-end">
+              <button 
+                onClick={() => setIsSettingsOpen(false)}
+                className="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg font-bold transition-colors shadow-lg shadow-purple-900/50"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Embedded CSS for slide-in animation */}
@@ -353,8 +1131,15 @@ export default function ResultsDashboard() {
           from { transform: translateX(100%); }
           to { transform: translateX(0); }
         }
+        @keyframes slideInLeft {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(0); }
+        }
         .animate-slide-in {
-          animation: slideIn 0.3s ease-out forwards;
+          animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-slide-in-left {
+          animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;

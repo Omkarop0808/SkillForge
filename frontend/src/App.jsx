@@ -8,54 +8,38 @@ import ResultsDashboard from './pages/ResultsDashboard'
 // Note: Replace with true Clerk Publishable Key in production
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || ""
 
+function ProtectedRoute({ children }) {
+  const isDemo = sessionStorage.getItem('is_demo') === 'true'
+  if (isDemo || !PUBLISHABLE_KEY || !PUBLISHABLE_KEY.startsWith("pk_")) {
+    return children;
+  }
+  return (
+    <>
+      <SignedIn>{children}</SignedIn>
+      <SignedOut><RedirectToSignIn /></SignedOut>
+    </>
+  )
+}
+
 function App() {
-  // Gracefully handle missing or invalid Clerk key to prevent hard crashes
+  const content = (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
+        <Route path="/processing" element={<ProtectedRoute><ProcessingPage /></ProtectedRoute>} />
+        <Route path="/results" element={<ProtectedRoute><ResultsDashboard /></ProtectedRoute>} />
+      </Routes>
+    </BrowserRouter>
+  )
+
   if (!PUBLISHABLE_KEY || !PUBLISHABLE_KEY.startsWith("pk_")) {
-    return (
-      <div className="min-h-screen bg-[#06020c] flex items-center justify-center p-8">
-        <div className="glass-card p-8 max-w-lg text-center border-red-500/30">
-          <h2 className="text-2xl font-bold text-white mb-4">Clerk Authentication Missing</h2>
-          <p className="text-slate-300 mb-6">
-            The application requires a valid Clerk Publishable Key to run.
-          </p>
-          <div className="bg-black/50 p-4 rounded-lg text-left text-sm font-mono text-purple-300 mb-6 overflow-x-auto">
-            1. Go to <a href="https://dashboard.clerk.com" target="_blank" className="text-blue-400 underline">dashboard.clerk.com</a><br/>
-            2. Create an application<br/>
-            3. Copy the "Publishable key"<br/>
-            4. Paste it into <code>frontend/.env</code> as:<br/>
-            <span className="text-white">VITE_CLERK_PUBLISHABLE_KEY=pk_test_...</span>
-          </div>
-          <p className="text-xs text-slate-500">Restart the Vite server after adding the key.</p>
-        </div>
-      </div>
-    )
+    return content;
   }
 
   return (
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/upload" element={
-            <>
-              <SignedIn><UploadPage /></SignedIn>
-              <SignedOut><RedirectToSignIn /></SignedOut>
-            </>
-          } />
-          <Route path="/processing" element={
-            <>
-              <SignedIn><ProcessingPage /></SignedIn>
-              <SignedOut><RedirectToSignIn /></SignedOut>
-            </>
-          } />
-          <Route path="/results" element={
-            <>
-              <SignedIn><ResultsDashboard /></SignedIn>
-              <SignedOut><RedirectToSignIn /></SignedOut>
-            </>
-          } />
-        </Routes>
-      </BrowserRouter>
+      {content}
     </ClerkProvider>
   )
 }

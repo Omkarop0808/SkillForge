@@ -40,6 +40,15 @@ def _fix_json_string(text: str) -> str:
 def _parse_json_from_response(text: str) -> dict:
     """Extract JSON from LLM response with multiple fallback strategies."""
     
+    text = text.strip()
+    if text.startswith("```json"):
+        text = text[7:]
+    elif text.startswith("```"):
+        text = text[3:]
+    if text.endswith("```"):
+        text = text[:-3]
+    text = text.strip()
+
     # Strategy 1: Direct parse
     try:
         return json.loads(text)

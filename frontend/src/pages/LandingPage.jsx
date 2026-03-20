@@ -42,6 +42,20 @@ const features = [
 export default function LandingPage() {
   const navigate = useNavigate()
 
+  const handleDemoLogin = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/api/demo/seed');
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      sessionStorage.setItem('skillforge_result', JSON.stringify(data.data.result));
+      sessionStorage.setItem('is_demo', 'true');
+      navigate('/results');
+    } catch (err) {
+      console.error(err);
+      alert('Ensure the backend is running on port 8000 to fetch demo data.');
+    }
+  }
+
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#06020c]">
       {/* Magic UI Background Blobs */}
@@ -72,6 +86,12 @@ export default function LandingPage() {
                 Get Started
               </button>
             </SignInButton>
+            <button 
+              onClick={handleDemoLogin} 
+              className="py-2 px-6 rounded-full text-sm text-white font-bold ml-4 bg-gradient-to-r from-green-500 to-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] transition-all hover:-translate-y-0.5"
+            >
+              Hackathon Demo
+            </button>
           </SignedOut>
           <SignedIn>
             <button
