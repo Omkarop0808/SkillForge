@@ -10,7 +10,7 @@
 
 | Resource | Link |
 |----------|------|
-| 🎥 Demo Video | [Watch Here](PASTE_VIDEO_LINK_HERE) |
+| 🎥 Demo Video | [Watch Here](https://drive.google.com/file/d/1p1Pz4lqKqh2f6K2-2rwraDw3f6h76i-o/view) |
 | 📊 Pitch Deck (PPT) | [View Presentation](https://www.canva.com/design/DAHEgOGoen0/l46G1Us_AT1CsczKEGCZ9A/edit?utm_content=DAHEgOGoen0&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton) |
 | 🌐 Live Demo | (https://skill-forge-iota.vercel.app/) |
 
