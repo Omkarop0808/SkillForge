@@ -4,6 +4,8 @@ import LandingPage from './pages/LandingPage'
 import UploadPage from './pages/UploadPage'
 import ProcessingPage from './pages/ProcessingPage'
 import ResultsDashboard from './pages/ResultsDashboard'
+import NotesPage from './pages/NotesPage'
+import QuizArena from './pages/QuizArena'
 
 // Note: Replace with true Clerk Publishable Key in production
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || ""
@@ -28,7 +30,9 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
         <Route path="/processing" element={<ProtectedRoute><ProcessingPage /></ProtectedRoute>} />
-        <Route path="/results" element={<ProtectedRoute><ResultsDashboard /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><ResultsDashboard /></ProtectedRoute>} />
+        <Route path="/notes" element={<ProtectedRoute><NotesPage /></ProtectedRoute>} />
+        <Route path="/quiz" element={<ProtectedRoute><QuizArena /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   )

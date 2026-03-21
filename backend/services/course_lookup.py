@@ -7,9 +7,82 @@ generates course names. This ensures 100% grounding and zero hallucinations.
 
 import json
 import os
+import requests
+import asyncio
+import urllib.request
+import urllib.parse
+import re
 from typing import Optional
 from db.database import get_courses_by_skill, get_all_courses
+from config import settings
 
+# --- Live YouTube Search (Protobuf / No-Auth / Array Extraction) ---
+async def _fetch_top_videos(topic: str, limit: int = 6) -> list[dict]:
+    """Uses internal protobuf searching to grab 6 top videos, prioritized by trusted creator channels."""
+    try:
+        from youtubesearchpython import VideosSearch
+        
+        def fetch_protobuf():
+            query = f"{topic} tutorial OR {topic} full course OR {topic} masterclass"
+            video_search = VideosSearch(query, limit=15) # Fetch 15 to allow rigorous sorting
+            vid_result = video_search.result()
+            
+            if not vid_result or not vid_result.get("result"):
+                return []
+                
+            raw_videos = []
+            for v in vid_result["result"]:
+                channel_name = v.get("channel", {}).get("name", "")
+                
+                view_str = v.get("viewCount", {}).get("short", "")
+                if not view_str and v.get("viewCount", {}).get("text"):
+                    view_str = v.get("viewCount", {}).get("text")
+                    
+                thumbnail = ""
+                if v.get("thumbnails") and len(v["thumbnails"]) > 0:
+                    thumbnail = v["thumbnails"][0].get("url", "")
+                    
+                raw_videos.append({
+                    "id": v.get("id"),
+                    "title": v.get("title", ""),
+                    "channel": channel_name,
+                    "viewCount": view_str,
+                    "thumbnail": thumbnail,
+                    "duration": v.get("duration", ""),
+                    "url": f"https://www.youtube.com/watch?v={v.get('id')}" if v.get('id') else ""
+                })
+                
+            # --- Custom Priority Sorting Algorithm (Curated Mentors) ---
+            indian_channels = ["apna college", "codewithharry", "akshay saini", "hitesh choudhary", "thapa technical", "jenny's lectures", "gate smashers", "telusko", "ajay kumar", "ajay kumar (aj)", "striver", "love babbar", "chai aur code", "campusx", "krish naik"]
+            global_channels = ["traversy media", "fireship", "the cherno", "networkchuck", "techwithtim", "mosh hamedani", "programming with mosh", "academind", "web dev simplified", "freecodecamp", "freecodecamp.org", "mit opencourseware", "sentdex", "3blue1brown", "coderdave"]
+            all_priority = indian_channels + global_channels
+            
+            def sort_key(vid):
+                c_name = vid["channel"].lower()
+                
+                # 1. Highest priority if it matches a requested legendary channel
+                for p in all_priority:
+                    if p in c_name or c_name in p:
+                        return 0
+                        
+                # 2. Secondary priority based on views ('M' > 'K')
+                vc = vid["viewCount"].lower()
+                if 'm' in vc:
+                    return 1
+                elif 'k' in vc:
+                    return 2
+                return 3
+                
+            raw_videos.sort(key=sort_key)
+            return raw_videos[:limit]
+            
+        return await asyncio.to_thread(fetch_protobuf)
+    except ImportError:
+        print("youtubesearchpython not installed. Falling back to native iFrame search.")
+    except Exception as e:
+        print(f"Protobuf Top Videos Error: {e}")
+        
+    return []
 
 # ─── Fallback Local Catalog ──────────────────────────────────
 
@@ -99,37 +172,42 @@ async def lookup_courses(
 
     for module in modules:
         skill = module.get("skill", "")
+        encoded_skill = urllib.parse.quote_plus(skill)
         
-        # Find matching course
+        # Execute extraction of Top 6 Highly-Curated YouTube Objects
+        top_videos = await _fetch_top_videos(skill, limit=6)
+        
+        platform = "YouTube (Curated Top Hits)"
+        fallback_query = f"{skill} tutorial OR {skill} full course"
+        fallback_url = f"https://www.youtube.com/results?search_query={urllib.parse.quote_plus(fallback_query)}"
+
+        # Safely assign primary viewable URL
+        primary_url = top_videos[0]["url"] if top_videos else fallback_url
+        
+        # Find matching DB course for canonical text links
         matched_course = _find_best_match(skill, all_courses)
 
         if matched_course:
             module["course"] = {
                 "title": matched_course.get("title", f"{skill} Course"),
-                "platform": matched_course.get("platform", "Online"),
-                "url": matched_course.get("url", "#"),
+                "platform": platform,
+                "url": primary_url,     
+                "videos": top_videos, # Propagate 6-video array to Frontend
                 "estimated_hours": matched_course.get("estimated_hours", module.get("estimated_hours", 10)),
-                "source": "course_catalog",
+                "source": "course_catalog_youtube_override",
             }
-            # Add related resources
+            # Push original text course into related resources!
+            original_url = matched_course.get("url", "#")
             module["related_resources"] = [
-                {"title": f"{skill} on MDN", "url": f"https://developer.mozilla.org/en-US/search?q={skill}"},
-                {"title": f"{skill} Roadmap", "url": f"https://roadmap.sh/search?q={skill}"}
+                {"title": f"Official Text/Cert Course for {skill}", "url": original_url},
+                {"title": f"{skill} on Roadmap.sh", "url": f"https://roadmap.sh/search?q={skill}"}
             ]
         else:
-            # Self-study fallback with curated YouTube channels and docs
-            encoded_skill = skill.replace(' ', '+')
-            if domain == "tech":
-                yt_query = f"{encoded_skill}+tutorial+CodeWithHarry+OR+Chai+aur+Code+OR+Fireship"
-                platform = "YouTube (Curated: CodeWithHarry, ChaiCode)"
-            else:
-                yt_query = f"{encoded_skill}+training+tutorial"
-                platform = "YouTube Tutorials"
-
             module["course"] = {
-                "title": f"Self-Study: {skill}",
+                "title": f"Top Tutorials: {skill}",
                 "platform": platform,
-                "url": f"https://www.youtube.com/results?search_query={yt_query}",
+                "url": primary_url,
+                "videos": top_videos, # Propagate 6-video array to Frontend
                 "estimated_hours": module.get("estimated_hours", 10),
                 "source": "self_study_fallback",
             }

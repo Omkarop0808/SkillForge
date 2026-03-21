@@ -50,10 +50,14 @@ async def analyze_gap(request: AnalyzeRequest):
         )
 
         # Step 3: Build skill prerequisite graph
+        partial_skills = [p["jd_skill"] for p in gap_result.get("partial", [])]
+        combined_missing = gap_result["missing"] + partial_skills
+
         skill_graph = build_skill_graph(
-            missing_skills=gap_result["missing"],
+            missing_skills=combined_missing,
             resume_skills=[s.name for s in request.resume_skills],
             domain=request.domain,
+            partial_skills=partial_skills,
         )
 
         # Step 4: Generate adaptive path

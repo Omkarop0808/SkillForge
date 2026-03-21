@@ -131,6 +131,7 @@ def build_skill_graph(
     missing_skills: list[str],
     resume_skills: list[str],
     domain: str = "tech",
+    partial_skills: list[str] = None
 ) -> nx.DiGraph:
     """
     Build a directed acyclic graph of skills with prerequisite edges.
@@ -143,12 +144,17 @@ def build_skill_graph(
         missing_skills: Skills identified as gaps
         resume_skills: Skills the user already has
         domain: "tech" or "operational"
+        partial_skills: List of skills the user is near-competent in
         
     Returns:
         NetworkX DiGraph with skill nodes and prerequisite edges
     """
+    if partial_skills is None:
+        partial_skills = []
+    
     prereq_db = TECH_PREREQUISITES if domain == "tech" else OPERATIONAL_PREREQUISITES
     resume_skills_lower = {s.lower().strip() for s in resume_skills}
+    partial_skills_lower = {s.lower().strip() for s in partial_skills}
 
     G = nx.DiGraph()
 
@@ -156,7 +162,8 @@ def build_skill_graph(
     for skill in missing_skills:
         skill_lower = skill.lower().strip()
         difficulty = _estimate_difficulty(skill_lower, prereq_db)
-        G.add_node(skill, difficulty=difficulty, original_name=skill)
+        is_partial = skill_lower in partial_skills_lower
+        G.add_node(skill, difficulty=difficulty, original_name=skill, is_partial=is_partial)
 
     # Add prerequisite edges
     for skill in missing_skills:

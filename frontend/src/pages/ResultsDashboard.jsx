@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, Play, CheckCircle2, Lock, Flame, Trophy, LayoutDashboard, BrainCircuit, Target, Settings, HelpCircle, ChevronRight, X, BookOpen, Clock, PlayCircle, Loader2, LogOut, ArrowRight, Video, Download } from 'lucide-react'
+import { Sparkles, Play, CheckCircle2, Lock, Flame, Trophy, LayoutDashboard, BrainCircuit, Target, Settings, HelpCircle, ChevronRight, X, BookOpen, Clock, PlayCircle, Loader2, LogOut, ArrowRight, Video, Download, Menu } from 'lucide-react'
 import { UserButton, useUser } from '@clerk/clerk-react'
 import YouTube from 'react-youtube'
 import confetti from 'canvas-confetti'
@@ -8,6 +8,7 @@ import { ReactFlow, Background, Controls, Handle, Position } from '@xyflow/react
 import '@xyflow/react/dist/style.css'
 import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
+import { scrapeUrl } from '../utils/api'
 
 /* ─── Gamified Node Component ──────────────────────── */
 function CandyNode({ data }) {
@@ -146,9 +147,44 @@ function TrackedYouTube({ url, onComplete }) {
   }, [player, onComplete])
 
   let videoId = ""
-  if (url.includes("watch?v=")) videoId = url.split("v=")[1]?.split("&")[0]
-  else if (url.includes("embed/")) videoId = url.split("embed/")[1]?.split("?")[0]
-  else if (url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1]?.split("?")[0]
+  let isPlaylist = false
+  let playlistUrl = ""
+  
+  if (url.includes("videoseries?list=") || url.includes("listType=search")) {
+    isPlaylist = true
+    playlistUrl = url
+  } else if (url.includes("watch?v=")) {
+    videoId = url.split("v=")[1]?.split("&")[0]
+  } else if (url.includes("embed/")) {
+    videoId = url.split("embed/")[1]?.split("?")[0]
+  } else if (url.includes("youtu.be/")) {
+    videoId = url.split("youtu.be/")[1]?.split("?")[0]
+  }
+
+  // --- Dynamic Playlist Search Support ---
+  if (isPlaylist) {
+    return (
+      <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 aspect-video mb-6 bg-black flex flex-col">
+        <iframe 
+          className="w-full flex-1 border-0"
+          src={playlistUrl}
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+        />
+        {/* Manual Complete Trigger for Iframe Sandboxes */}
+        <div className="h-10 w-full bg-slate-900 border-t border-white/10 flex items-center justify-center">
+            <button 
+              onClick={onComplete} 
+              className="text-xs text-purple-400 hover:text-purple-300 uppercase font-bold tracking-[0.2em] transition-colors h-full w-full flex items-center justify-center gap-2"
+            >
+              <CheckCircle2 className="w-4 h-4" /> Mark Playlist Progress Complete
+            </button>
+        </div>
+      </div>
+    )
+  }
+
+  // --- Single Video Support ---
 
   return (
     <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 aspect-video mb-6 bg-black">
@@ -174,9 +210,15 @@ export default function ResultsDashboard() {
   const navigate = useNavigate()
   const [result, setResult] = useState(null)
   const [selectedModule, setSelectedModule] = useState(null)
+  const [activeVideo, setActiveVideo] = useState(null) // Controls the currently playing iframe
   const [completedIds, setCompletedIds] = useState(new Set())
   const [activeTab, setActiveTab] = useState('resources')
   const [currentView, setCurrentView] = useState('gap') // Start on Gap Map!
+  
+  // Reset active video when module changes
+  useEffect(() => {
+    setActiveVideo(null)
+  }, [selectedModule])
   const [isExporting, setIsExporting] = useState(false)
   
   const { user } = useUser()
@@ -184,49 +226,87 @@ export default function ResultsDashboard() {
   
   // Settings & Navigation State
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   
   // Mentor State
   const [isMentorOpen, setIsMentorOpen] = useState(false)
   const [mentorChat, setMentorChat] = useState([])
   const [isMentorTyping, setIsMentorTyping] = useState(false)
 
-  const handleMentorSubmit = (e) => {
+  const handleMentorSubmit = async (e) => {
     if (e.key === 'Enter' && e.target.value.trim() !== '') {
       const query = e.target.value.trim()
       setMentorChat(prev => [...prev, { role: 'user', text: query }])
       e.target.value = ''
       setIsMentorTyping(true)
       
-      setTimeout(() => {
-        let reply = "I've saved that to your Notebook. Do you want me to quiz you on this later?"
-        let noteCard = null;
-
-        if (query.includes("http") || query.includes("youtube")) {
-          reply = "I fetched that URL! It looks like a great resource on this topic. I've extracted the key takeaways into your SkillForge memory:"
-          noteCard = {
-            title: "📝 Extracted Key Takeaways",
-            points: [
-              "The module focuses entirely on the foundational architecture of this technology.",
-              "Scalability is largely dependent on isolating side-effects intelligently.",
-              "Always memorize the core lifecycle principle to avoid memory leaks.",
-              "I have automatically attached these notes securely to your current learning module."
-            ]
-          }
-        } else if (query.toLowerCase().includes("summarize")) {
-          reply = "I analyzed this module for you. Here is your structured summary:"
-          noteCard = {
-            title: "⚡ Concept Summary",
-            points: [
-              "The core concept revolves around optimizing data traversals.",
-              "Track your state rigorously to prevent recursive infinite loops.",
-              "I've appended this flashcard to your active skill node for later review."
-            ]
-          }
+      try {
+        if (query.includes("http://") || query.includes("https://")) {
+          const scrapedData = await scrapeUrl(query);
+          
+          const noteCard = {
+            title: scrapedData.title || "📝 Extracted Notes",
+            topics: scrapedData.topics || [],
+            points: scrapedData.takeaways || [],
+            sourceUrl: query,
+            sourceType: scrapedData.source_type
+          };
+          
+          setMentorChat(prev => [...prev, { 
+            role: 'ai', 
+            text: "I fetched that URL! Here are the key takeaways I extracted:", 
+            noteCard,
+            isScraped: true,
+            isSaved: false
+          }])
+        } else {
+          // Standard generic AI response handler
+          setTimeout(() => {
+            let reply = "I've saved that to your Notebook. Do you want me to quiz you on this later?"
+            let noteCard = null;
+            if (query.toLowerCase().includes("summarize")) {
+              reply = "I analyzed this module for you. Here is your structured summary:"
+              noteCard = {
+                title: "⚡ Concept Summary",
+                points: [
+                  "The core concept revolves around optimizing data traversals.",
+                  "Track your state rigorously to prevent recursive infinite loops.",
+                  "I've appended this flashcard to your active skill node for later review."
+                ]
+              }
+            }
+            setMentorChat(prev => [...prev, { role: 'ai', text: reply, noteCard }])
+            setIsMentorTyping(false)
+          }, 1500)
+          return;
         }
-        setMentorChat(prev => [...prev, { role: 'ai', text: reply, noteCard }])
-        setIsMentorTyping(false)
-      }, 1500)
+      } catch (err) {
+        console.error(err);
+        setMentorChat(prev => [...prev, { role: 'ai', text: `Sorry, I couldn't read that URL. Reason: ${err.message}` }])
+      }
+      
+      setIsMentorTyping(false)
     }
+  }
+
+  const handleSaveNote = (msg, idx) => {
+    const existingNotes = JSON.parse(localStorage.getItem('skillforge_notes') || '[]');
+    const newNote = {
+      id: Date.now().toString(),
+      title: msg.noteCard.title,
+      tags: msg.noteCard.topics || ['Scraped'],
+      sourceType: msg.noteCard.sourceType || 'article',
+      url: msg.noteCard.sourceUrl || '',
+      date: new Date().toISOString(),
+      content: `# ${msg.noteCard.title}\n\n` + msg.noteCard.points.map(p => `- ${p}`).join('\n')
+    };
+    localStorage.setItem('skillforge_notes', JSON.stringify([newNote, ...existingNotes]));
+    
+    setMentorChat(prev => prev.map((m, i) => i === idx ? { ...m, isSaved: true, text: "✅ Saved securely to your Notes!" } : m));
+  }
+
+  const handleCancelNote = (idx) => {
+    setMentorChat(prev => prev.map((m, i) => i === idx ? { ...m, isScraped: false } : m));
   }
 
   useEffect(() => {
@@ -325,11 +405,12 @@ export default function ResultsDashboard() {
   });
 
   // React Flow Setup (Skill Gap Map)
-  // Winding vertical zigzag
+  // Winding vertical zigzag (Responsive)
   const GAP_ROW_HEIGHT = 180;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const gapNodes = allModules.map((m, index) => {
     const isEven = index % 2 === 0;
-    const xPos = isEven ? 100 : 450;
+    const xPos = isMobile ? 50 : (isEven ? 100 : 450);
     
     return {
       id: `gap-${m.skill.replace(/ /g, '-')}`,
@@ -598,13 +679,29 @@ export default function ResultsDashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-[#06020c] text-slate-300 overflow-hidden font-sans">
+    <div className="flex flex-col md:flex-row h-[100dvh] bg-[#06020c] text-slate-300 overflow-hidden font-sans">
       
+      {/* MOBILE OVERLAY BACKDROP */}
+      {isSidebarOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* LEFT SIDEBAR (Knovify Style) */}
-      <aside className="w-64 border-r border-slate-800/50 flex flex-col bg-[#0a0514]/80 p-6 shadow-2xl relative z-20">
-        <div className="flex items-center gap-3 mb-12 cursor-pointer" onClick={() => navigate('/')}>
-          <Sparkles className="w-6 h-6 text-purple-400" />
-          <span className="text-xl font-display font-bold text-white tracking-tight">SkillForge AI</span>
+      <aside className={`fixed md:relative inset-y-0 left-0 w-64 border-r border-slate-800/50 flex flex-col bg-[#0a0514] p-6 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} overflow-y-auto`}>
+        <div className="flex items-center justify-between mb-12">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+            <Sparkles className="w-6 h-6 text-purple-400" />
+            <span className="text-xl font-display font-bold text-white tracking-tight">SkillForge AI</span>
+          </div>
+          <button 
+            onClick={() => setIsSidebarOpen(false)}
+            className="md:hidden p-2 hover:bg-white/10 rounded-full text-slate-400"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         <p className="text-xs font-bold text-slate-500 mb-4 tracking-widest uppercase">Learn</p>
@@ -632,6 +729,18 @@ export default function ResultsDashboard() {
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors ${currentView === 'progress' ? 'bg-white/10 text-white border border-white/10 shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
           >
             <Download className="w-4 h-4 text-emerald-400" /> My Progress
+          </div>
+          <div 
+            onClick={() => navigate('/notes')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors text-slate-400 hover:text-white hover:bg-purple-500/10 hover:border hover:border-purple-500/20`}
+          >
+            <BookOpen className="w-4 h-4 text-amber-400" /> My Notes
+          </div>
+          <div 
+            onClick={() => navigate('/quiz')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors text-slate-400 hover:text-white hover:bg-orange-500/10 hover:border hover:border-orange-500/20`}
+          >
+            <Flame className="w-4 h-4 text-orange-500" /> Quiz Arena
           </div>
         </nav>
 
@@ -665,11 +774,22 @@ export default function ResultsDashboard() {
       </aside>
 
       {/* MAIN LAYOUT: CONDITIONAL TABS */}
-      <main className="flex-1 flex overflow-hidden relative font-sans">
+      <main className="flex-1 flex flex-col overflow-hidden relative font-sans w-full">
+        {/* MOBILE HEADER */}
+        <div className="md:hidden flex items-center justify-between p-4 bg-[#0a0514] border-b border-slate-800/50 z-30 shrink-0">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-purple-400" />
+            <span className="font-display font-bold text-white tracking-tight">SkillForge AI</span>
+          </div>
+          <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-400 bg-white/5 rounded-lg border border-white/5">
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
+
         <div className="absolute inset-0 magic-blob top-0 right-0 opacity-40 mix-blend-screen pointer-events-none" />
 
         {currentView === 'gap' && (
-          <div className="flex-1 flex flex-col p-8 lg:p-12 relative z-10 animate-fade-in custom-scrollbar overflow-y-auto w-full">
+          <div className="flex-1 flex flex-col p-4 md:p-8 lg:p-12 relative z-10 animate-fade-in custom-scrollbar overflow-y-auto w-full">
             <div className="flex justify-between items-end mb-8">
               <div>
                 <h1 className="text-3xl font-display font-medium text-white mb-2 flex items-center gap-3">
@@ -707,9 +827,9 @@ export default function ResultsDashboard() {
         )}
 
         {currentView === 'dashboard' && (
-          <>
+          <div className="flex-1 flex flex-row w-full h-full overflow-hidden">
             {/* VERTICAL TIMELINE ROADMAP */}
-            <div className="w-80 border-r border-slate-800/50 flex flex-col bg-[#080310] relative z-10 shadow-2xl">
+            <div className={`${selectedModule ? 'hidden lg:flex' : 'flex'} w-full lg:w-80 shrink-0 border-r border-slate-800/50 flex-col bg-[#080310] relative z-10 shadow-2xl`}>
               <div className="p-6 border-b border-slate-800/50 bg-[#0a0514]/90 sticky top-0 z-10 backdrop-blur-md">
                 <h2 className="text-xl font-display font-medium text-white flex items-center gap-2">
                   <Trophy className="w-5 h-5 text-yellow-500" /> Course Content
@@ -785,9 +905,12 @@ export default function ResultsDashboard() {
             </div>
 
             {/* MAIN VIDEO & RESOURCES STAGE */}
-            <div className="flex-1 overflow-y-auto relative z-10 custom-scrollbar p-6 lg:p-10 bg-[#06020c]">
+            <div className={`${selectedModule ? 'flex' : 'hidden lg:flex'} flex-1 flex-col overflow-y-auto relative z-10 custom-scrollbar p-6 lg:p-10 bg-[#06020c]`}>
               {selectedModule ? (
-                <div className="max-w-5xl mx-auto flex flex-col gap-6 animate-fade-in">
+                <div className="max-w-5xl mx-auto flex flex-col gap-6 animate-fade-in w-full">
+                  <div className="lg:hidden flex items-center mb-2 -mt-2">
+                     <button onClick={() => setSelectedModule(null)} className="flex items-center justify-center p-2 bg-white/5 rounded-full text-slate-400 hover:text-white"><ChevronRight className="w-6 h-6 rotate-180"/></button>
+                  </div>
                   
                   <div className="flex items-center justify-between mb-2">
                     <div>
@@ -810,20 +933,62 @@ export default function ResultsDashboard() {
                     )}
                   </div>
 
-                  {/* YouTube Player */}
+                  {/* YouTube Player & Dynamic 6-Video Grid */}
                   {selectedModule.course && (
                     <div className="w-full">
-                      {selectedModule.course.url.includes("youtu") ? (
-                        <TrackedYouTube url={selectedModule.course.url} onComplete={() => handleMarkComplete(selectedModule.skill)} />
-                      ) : (
-                        <a href={selectedModule.course.url} target="_blank" rel="noopener noreferrer" className="block p-8 rounded-2xl bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-500/20 hover:border-blue-500/40 transition-colors shadow-2xl">
-                          <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-4">
-                            <ArrowRight className="w-8 h-8 text-blue-400 -rotate-45" />
-                          </div>
-                          <h3 className="font-bold text-white text-2xl mb-2">{selectedModule.course.title}</h3>
-                          <p className="text-sm text-blue-300">Click to open this external course on {selectedModule.course.platform}</p>
-                        </a>
+                      
+                      {/* 1. Main Featured Iframe Player */}
+                      {(() => {
+                        const videoUrl = activeVideo || selectedModule.course.url;
+                        if (videoUrl.includes("watch?v=") || videoUrl.includes("youtu.be/") || videoUrl.includes("embed/") || videoUrl.includes("videoseries?list=") || videoUrl.includes("listType=search")) {
+                          return <TrackedYouTube url={videoUrl} onComplete={() => handleMarkComplete(selectedModule.skill)} />;
+                        } else {
+                          return (
+                            <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="block p-8 rounded-2xl bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-500/20 hover:border-blue-500/40 transition-colors shadow-2xl mb-6">
+                              <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-4">
+                                <ArrowRight className="w-8 h-8 text-blue-400 -rotate-45" />
+                              </div>
+                              <h3 className="font-bold text-white text-2xl mb-2">{selectedModule.course.title || "External Course"}</h3>
+                              <p className="text-sm text-blue-300">Click to open this external course on {selectedModule.course.platform}</p>
+                            </a>
+                          );
+                        }
+                      })()}
+
+                      {/* 2. Top Recommended Mentors Grid (6 Videos) */}
+                      {selectedModule.course.videos && selectedModule.course.videos.length > 0 && (
+                        <div className="mt-8">
+                           <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2 border-b border-white/10 pb-3">
+                             <Video className="w-5 h-5 text-purple-400"/> Top Recommended Tutorials
+                           </h3>
+                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                             {selectedModule.course.videos.map((vid, idx) => {
+                               const isActivePill = activeVideo === vid.url || (!activeVideo && idx === 0 && selectedModule.course.url === vid.url);
+                               return (
+                               <div 
+                                 key={idx}
+                                 onClick={() => { setActiveVideo(vid.url); window.scrollTo({ top: 300, behavior: 'smooth' }); }}
+                                 className={`cursor-pointer rounded-xl overflow-hidden border transition-all hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(168,85,247,0.2)] flex flex-col ${isActivePill ? 'border-purple-500 bg-purple-900/20 shadow-[0_0_15px_rgba(168,85,247,0.4)] ring-1 ring-purple-500' : 'border-white/10 bg-black/40 hover:border-purple-500/50'}`}
+                               >
+                                  <div className="w-full aspect-video bg-slate-800 relative group">
+                                    <img src={vid.thumbnail} alt={vid.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                                    {isActivePill && <div className="absolute top-2 left-2 bg-purple-600 px-2 py-0.5 rounded text-[10px] font-bold text-white tracking-widest uppercase">Now Playing</div>}
+                                    <div className="absolute bottom-2 right-2 bg-black/80 backdrop-blur-sm px-2 py-1 rounded text-xs font-mono text-white shadow">{vid.duration}</div>
+                                  </div>
+                                  <div className="p-3 flex-1 flex flex-col justify-between">
+                                    <h4 className="text-sm font-bold text-slate-200 line-clamp-2 leading-tight mb-2 group-hover:text-purple-300 transition-colors" title={vid.title}>{vid.title}</h4>
+                                    <div className="flex items-center justify-between text-xs text-slate-400 mt-auto">
+                                      <span className="font-medium text-purple-300 line-clamp-1 truncate mr-2" title={vid.channel}>{vid.channel}</span>
+                                      <span className="whitespace-nowrap opacity-80">{vid.viewCount} views</span>
+                                    </div>
+                                  </div>
+                               </div>
+                             )})}
+                           </div>
+                        </div>
                       )}
+                      
                     </div>
                   )}
 
@@ -899,7 +1064,7 @@ export default function ResultsDashboard() {
                 </div>
               )}
             </div>
-          </>
+          </div>
         )}
 
         {currentView === 'mindmap' && (
@@ -1054,13 +1219,30 @@ export default function ResultsDashboard() {
                         <div className="text-purple-400 font-bold mb-3 flex items-center gap-2">
                           {msg.noteCard.title}
                         </div>
-                        <ul className="space-y-2">
+                        <ul className="space-y-2 mb-4">
                           {msg.noteCard.points.map((pt, i) => (
                             <li key={i} className="flex gap-2 text-slate-300 leading-relaxed text-[13px]">
                               <span className="text-purple-500 mt-0.5">•</span> {pt}
                             </li>
                           ))}
                         </ul>
+                        {msg.isScraped && !msg.isSaved && (
+                          <div className="flex items-center gap-3 pt-3 border-t border-white/5">
+                            <button 
+                              onClick={() => handleSaveNote(msg, idx)}
+                              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-semibold rounded-lg transition-all shadow-lg"
+                            >
+                              <BookOpen className="w-4 h-4" />
+                              Add to Notes
+                            </button>
+                            <button 
+                              onClick={() => handleCancelNote(idx)}
+                              className="px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-medium rounded-lg transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

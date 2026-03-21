@@ -49,7 +49,7 @@ export default function ProcessingPage() {
         // Wait for steps to finish visually
         setTimeout(() => {
           clearInterval(stepInterval)
-          navigate('/results')
+          navigate('/dashboard')
         }, 1500)
       } catch (err) {
         setError(err.message || 'Analysis failed. Please try again.')

@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     # Google Gemini
     GEMINI_API_KEY: str | None = None
     GEMINI_MODEL: str = "gemini-2.5-flash"
+    YOUTUBE_API_KEY: str | None = None
 
     # App settings
     MAX_FILE_SIZE_MB: int = 5

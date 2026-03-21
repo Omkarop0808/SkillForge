@@ -3,7 +3,7 @@
  */
 
 // Use the VITE_API_URL environment variable if deployed, otherwise fallback to local proxy
-const API_BASE = import.meta.env.VITE_API_URL 
+export const API_BASE = import.meta.env.VITE_API_URL 
   ? `${import.meta.env.VITE_API_URL.replace(/\/+$/, '')}/api` 
   : '/api';
 
@@ -20,8 +20,12 @@ export async function uploadResume(file) {
   });
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.detail || 'Failed to upload resume');
+    let errMsg = `Failed with status ${response.status}`;
+    try {
+      const err = await response.json();
+      errMsg = err.detail || errMsg;
+    } catch(e) { /* ignore */ }
+    throw new Error(errMsg);
   }
 
   return response.json();
@@ -45,8 +49,12 @@ export async function uploadJD(jdText, file = null) {
   });
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.detail || 'Failed to process JD');
+    let errMsg = `Failed with status ${response.status}`;
+    try {
+      const err = await response.json();
+      errMsg = err.detail || errMsg;
+    } catch(e) { /* ignore */ }
+    throw new Error(errMsg);
   }
 
   return response.json();
@@ -68,8 +76,12 @@ export async function analyzeGap(sessionId, resumeSkills, jdText, domain) {
   });
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.detail || 'Analysis failed');
+    let errMsg = `Failed with status ${response.status}`;
+    try {
+      const err = await response.json();
+      errMsg = err.detail || errMsg;
+    } catch(e) { /* ignore */ }
+    throw new Error(errMsg);
   }
 
   return response.json();
@@ -89,8 +101,34 @@ export async function updateProgress(sessionId, completedModuleIds) {
   });
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.detail || 'Progress update failed');
+    let errMsg = `Failed with status ${response.status}`;
+    try {
+      const err = await response.json();
+      errMsg = err.detail || errMsg;
+    } catch(e) { /* ignore */ }
+    throw new Error(errMsg);
+  }
+
+  return response.json();
+}
+
+/**
+ * Scrape and summarize a URL.
+ */
+export async function scrapeUrl(url) {
+  const response = await fetch(`${API_BASE}/scrape-url`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+
+  if (!response.ok) {
+    let errMsg = `Failed with status ${response.status}`;
+    try {
+      const err = await response.json();
+      errMsg = err.detail || errMsg;
+    } catch(e) { /* ignore */ }
+    throw new Error(errMsg);
   }
 
   return response.json();

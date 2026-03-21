@@ -112,7 +112,7 @@ Rules:
 - Normalize names (e.g. "JS" -> "JavaScript")
 
 RESUME:
-{resume_text[:3000]}"""
+{resume_text[:6000]}"""
 
     try:
         client = _get_client()
@@ -148,10 +148,10 @@ RESUME:
             client = _get_client()
             simple_prompt = f"""List all skills from this resume as JSON: {{"skills": [{{"name": "SkillName", "confidence": 0.8, "category": "general"}}], "experience_level": "mid"}}
 
-Resume: {resume_text[:2000]}"""
+Resume: {resume_text[:6000]}"""
             
             response = client.models.generate_content(
-                model=settings.GEMINI_MODEL,
+                model="gemini-1.5-flash",
                 contents=simple_prompt,
                 config=GenerateContentConfig(
                     temperature=0.2,
@@ -210,7 +210,7 @@ JD:
             simple_prompt = f"""Extract skills from JD as JSON: {{"skills": [{{"name": "SkillName", "importance": "required", "category": "general"}}], "experience_level": "mid"}}
 JD: {jd_text[:2000]}"""
             response = client.models.generate_content(
-                model=settings.GEMINI_MODEL,
+                model="gemini-1.5-flash",
                 contents=simple_prompt,
                 config=GenerateContentConfig(
                     temperature=0.2, 

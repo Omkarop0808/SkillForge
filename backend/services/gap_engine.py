@@ -55,7 +55,9 @@ def semantic_match(query_skill: str, candidate_skills: list[str], threshold: flo
         if best_score >= threshold:
             return candidate_skills[best_idx]
     except Exception as e:
-        print(f"Gemini Embedding Error: {e}")
+        error_msg = str(e)
+        if "404" not in error_msg and "NOT_FOUND" not in error_msg:
+            print(f"Gemini Embedding Error: {error_msg}")
         
     return None
 

@@ -74,7 +74,12 @@ def build_adaptive_path(
     for skill in ordered_skills:
         node_data = graph.nodes.get(skill, {})
         difficulty = node_data.get("difficulty", "intermediate")
-        estimated_hours = SKILL_HOURS.get(difficulty, 10)
+        is_partial = node_data.get("is_partial", False)
+        
+        if is_partial:
+            estimated_hours = 2
+        else:
+            estimated_hours = SKILL_HOURS.get(difficulty, 10)
 
         # Get prerequisites from graph
         predecessors = list(graph.predecessors(skill))
