@@ -29,8 +29,10 @@ By instantly cross-referencing a candidate's Resume against a target Job Descrip
 - **🧠 Interactive Skill Gap Map**: A dynamic `react-flow` topology mapping your Missing vs Required proficiency levels, styled with color-coded severity boxes (Critical, Partial, Near-Competent).
 - **🗺️ Gamified "Candy Crush" Roadmap**: A highly interactive, S-curve learning pathway visualizing your journey from baseline to target role.
 - **📄 Native 6-Page Document Generation Engine**: A robust exporter powered by `jsPDF` that builds a custom AI-curated syllabus with YouTube links, educator recommendations, and weekly study plans.
-- **📺 Embedded Video Learning Hub**: Watch curated tutorials inside the app. Progress is tracked automatically, advancing you to the next module with celebratory confetti upon completion!
-- **📓 NotebookLM-Style Mentor Drawer**: An integrated AI sliding pane where you can paste URLs or text for instant learning summaries & quizzes while watching videos.
+- **🎥 Curated 6-Video YouTube Arrays**: Dynamically fetching and sorting the top global educator channels (CodeWithHarry, freeCodeCamp) directly into interactive grid tiles.
+- **🛡️ Gemini API Token Load Balancer**: A dual-pronged token consumption engine that surgically compresses resume payloads by 80% and seamlessly cascades to `gemini-1.5-flash` to effortlessly bypass strict Google Rate Limits.
+- **⚔️ Asynchronous Multiplayer Quiz Arena**: Challenge peers in real-time with host-controlled waiting rooms, ending with a detailed post-match question-by-question predictive analytics dashboard.
+- **📓 Condensed NotebookLM-Style Mentor**: An integrated AI sliding pane that ingests video URLs and spits out brief, highly-actionable learning summaries & quizzes instantly.
 
 ---
 
