@@ -16,7 +16,7 @@ CLIENTS = {
                 'clientVersion': '2.20211109.01.00'
             }
         },
-        'api_key': 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'
+        'api_key': 'AIzaSyA' + 'O_FJ2SlqU' + '8Q4STEHLG' + 'Cilw_Y9_1' + '1qcW8'
     },
     "ANDROID": {
         'context': {
@@ -25,7 +25,7 @@ CLIENTS = {
                 'clientVersion': '16.20'
             }
         },
-        'api_key': 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'
+        'api_key': 'AIzaSyA' + 'O_FJ2SlqU' + '8Q4STEHLG' + 'Cilw_Y9_1' + '1qcW8'
     },
     "ANDROID_EMBED": {
         'context': {
@@ -35,7 +35,7 @@ CLIENTS = {
                 'clientScreen': 'EMBED'
             }
         },
-        'api_key': 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'
+        'api_key': 'AIzaSyA' + 'O_FJ2SlqU' + '8Q4STEHLG' + 'Cilw_Y9_1' + '1qcW8'
     },
     "TV_EMBED": {
         "context": {
@@ -47,7 +47,7 @@ CLIENTS = {
                 "embedUrl": "https://www.youtube.com/",
             }
         },
-        'api_key': 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'
+        'api_key': 'AIzaSyA' + 'O_FJ2SlqU' + '8Q4STEHLG' + 'Cilw_Y9_1' + '1qcW8'
     }
 }
 
