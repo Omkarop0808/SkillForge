@@ -63,29 +63,25 @@ export default function ProcessingPage() {
   }, [navigate])
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative">
-      {/* Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen flex items-center justify-center relative clay-hero-bg">
 
       <div className="relative z-10 w-full max-w-lg mx-auto px-8">
         {/* Header */}
         <div className="text-center mb-12 animate-fade-in">
-          <div className="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center mx-auto mb-6 float-animation">
-            <Sparkles className="w-8 h-8 text-blue-400" />
+          <div className="w-16 h-16 rounded-3xl bg-white/80 border border-black/5 shadow-[0_12px_0_rgba(15,23,42,0.10),0_26px_70px_rgba(15,23,42,0.10)] flex items-center justify-center mx-auto mb-6 float-animation">
+            <Sparkles className="w-8 h-8 text-[#16a34a]" />
           </div>
-          <h1 className="text-2xl font-display font-bold mb-2">
-            Analyzing Your <span className="gradient-text">Profile</span>
+          <h1 className="text-2xl font-display font-black mb-2 text-slate-950">
+            Analyzing Your <span className="text-[#7c3aed]">Profile</span>
           </h1>
-          <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
+          <div className="flex items-center justify-center gap-2 text-sm text-slate-600">
             <Clock className="w-4 h-4" />
             <span>Estimated time: ~15 seconds</span>
           </div>
         </div>
 
         {/* Step Progress */}
-        <div className="glass-card p-8 animate-slide-up">
+        <div className="clay-card p-8 animate-slide-up">
           <div className="space-y-2">
             {steps.map((step, i) => {
               const isCompleted = i < currentStep
@@ -99,14 +95,14 @@ export default function ProcessingPage() {
                 >
                   <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center">
                     {isCompleted ? (
-                      <CheckCircle className="w-6 h-6 text-green-400" />
+                      <CheckCircle className="w-6 h-6 text-[#16a34a]" />
                     ) : isActive ? (
-                      <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
+                      <Loader2 className="w-6 h-6 text-[#7c3aed] animate-spin" />
                     ) : (
                       <span className="text-lg">{step.icon}</span>
                     )}
                   </div>
-                  <span className={`text-sm ${isActive ? 'text-blue-300 font-medium' : isCompleted ? 'text-slate-500' : 'text-slate-500'}`}>
+                  <span className={`text-sm ${isActive ? 'text-slate-950 font-semibold' : isCompleted ? 'text-slate-600' : 'text-slate-600'}`}>
                     {isCompleted ? step.label.replace('...', ' ✓') : step.label}
                   </span>
                 </div>
@@ -115,9 +111,9 @@ export default function ProcessingPage() {
           </div>
 
           {/* Progress Bar */}
-          <div className="mt-6 h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+          <div className="mt-6 h-2 bg-black/5 rounded-full overflow-hidden border border-black/5">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-1000 ease-out"
+              className="h-full rounded-full bg-gradient-to-r from-[#22c55e] to-[#7c3aed] transition-all duration-1000 ease-out"
               style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
             />
           </div>
@@ -125,10 +121,10 @@ export default function ProcessingPage() {
 
         {/* Error */}
         {error && (
-          <div className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-center animate-fade-in">
-            <p className="text-sm text-red-300 mb-3">{error}</p>
+          <div className="mt-6 p-4 rounded-3xl bg-white/80 border border-red-500/20 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] text-center animate-fade-in">
+            <p className="text-sm text-red-700 font-semibold mb-3">{error}</p>
             <button
-              className="btn-secondary text-sm"
+              className="clay-btn-secondary text-sm px-5 py-2.5"
               onClick={() => navigate('/upload')}
             >
               Go Back & Try Again

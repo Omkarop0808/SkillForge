@@ -788,56 +788,58 @@ export default function ResultsDashboard() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-[100dvh] bg-[#06020c] text-slate-300 overflow-hidden font-sans">
+    <div className="flex flex-col md:flex-row h-[100dvh] clay-hero-bg text-slate-900 overflow-hidden font-sans">
       
       {/* MOBILE OVERLAY BACKDROP */}
       {isSidebarOpen && (
         <div 
-          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
+          className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* LEFT SIDEBAR (Knovify Style) */}
-      <aside className={`fixed md:relative inset-y-0 left-0 w-64 border-r border-slate-800/50 flex flex-col bg-[#0a0514] p-6 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} overflow-y-auto`}>
+      <aside className={`fixed md:relative inset-y-0 left-0 w-64 border-r border-black/5 flex flex-col bg-white/75 backdrop-blur-md p-6 shadow-[0_14px_0_rgba(15,23,42,0.10),0_30px_80px_rgba(15,23,42,0.10)] z-50 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} overflow-y-auto`}>
         <div className="flex items-center justify-between mb-12">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-            <Sparkles className="w-6 h-6 text-purple-400" />
-            <span className="text-xl font-display font-bold text-white tracking-tight">SkillForge AI</span>
+            <div className="w-10 h-10 rounded-2xl bg-white border border-black/5 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-[#16a34a]" />
+            </div>
+            <span className="text-xl font-display font-extrabold text-slate-950 tracking-tight">SkillForge</span>
           </div>
           <button 
             onClick={() => setIsSidebarOpen(false)}
-            className="md:hidden p-2 hover:bg-white/10 rounded-full text-slate-400"
+            className="md:hidden p-2 hover:bg-black/5 rounded-full text-slate-600"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <p className="text-xs font-bold text-slate-500 mb-4 tracking-widest uppercase">Learn</p>
+        <p className="text-xs font-extrabold text-slate-600 mb-4 tracking-widest uppercase">Learn</p>
         <nav className="space-y-2 mb-10 text-sm font-medium">
           <div 
             onClick={() => setCurrentView('gap')}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors ${currentView === 'gap' ? 'bg-white/10 text-white border border-white/10 shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer transition-colors border ${currentView === 'gap' ? 'bg-white text-slate-950 border-black/10 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)]' : 'border-black/5 text-slate-700 hover:text-slate-950 hover:bg-white/70'}`}
           >
-            <Target className="w-4 h-4 text-red-400" /> Skill Gap Map
+            <Target className="w-4 h-4 text-red-500" /> Skill Gap Map
           </div>
           <div 
             onClick={() => setCurrentView('mindmap')}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors ${currentView === 'mindmap' ? 'bg-white/10 text-white border border-white/10 shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer transition-colors border ${currentView === 'mindmap' ? 'bg-white text-slate-950 border-black/10 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)]' : 'border-black/5 text-slate-700 hover:text-slate-950 hover:bg-white/70'}`}
           >
-            <BrainCircuit className="w-4 h-4 text-blue-400" /> Interactive Roadmap
+            <BrainCircuit className="w-4 h-4 text-[#0ea5e9]" /> Interactive Roadmap
           </div>
           <div 
             onClick={() => setCurrentView('dashboard')}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors ${currentView === 'dashboard' ? 'bg-white/10 text-white border border-white/10 shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer transition-colors border ${currentView === 'dashboard' ? 'bg-white text-slate-950 border-black/10 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)]' : 'border-black/5 text-slate-700 hover:text-slate-950 hover:bg-white/70'}`}
           >
-            <LayoutDashboard className="w-4 h-4 text-purple-400" /> Learning Hub
+            <LayoutDashboard className="w-4 h-4 text-[#7c3aed]" /> Learning Hub
           </div>
           <div 
             onClick={() => setCurrentView('progress')}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors ${currentView === 'progress' ? 'bg-white/10 text-white border border-white/10 shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer transition-colors border ${currentView === 'progress' ? 'bg-white text-slate-950 border-black/10 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)]' : 'border-black/5 text-slate-700 hover:text-slate-950 hover:bg-white/70'}`}
           >
-            <Download className="w-4 h-4 text-emerald-400" /> My Progress
+            <Download className="w-4 h-4 text-emerald-600" /> My Progress
           </div>
           <div 
             onClick={() => navigate('/notes')}
@@ -859,28 +861,28 @@ export default function ResultsDashboard() {
           </div>
         </nav>
 
-        <p className="text-xs font-bold text-slate-500 mb-4 tracking-widest uppercase">Support</p>
+        <p className="text-xs font-extrabold text-slate-600 mb-4 tracking-widest uppercase">Support</p>
         <nav className="space-y-2 text-sm font-medium">
           <div 
             onClick={() => setIsMentorOpen(true)}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors text-slate-400 hover:text-white"
+            className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/70 cursor-pointer transition-colors text-slate-700 hover:text-slate-950 border border-black/5"
           >
-            <BrainCircuit className="w-4 h-4 text-slate-500" /> AI Mentor (Notebook)
+            <BrainCircuit className="w-4 h-4 text-slate-600" /> AI Mentor (Notebook)
           </div>
           <div 
             onClick={() => setIsSettingsOpen(true)}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors text-slate-400 hover:text-white"
+            className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/70 cursor-pointer transition-colors text-slate-700 hover:text-slate-950 border border-black/5"
           >
             <Settings className="w-4 h-4" /> Settings
           </div>
         </nav>
 
-        <div className="mt-auto flex flex-col gap-4 border-t border-slate-800/50 pt-6">
+        <div className="mt-auto flex flex-col gap-4 border-t border-black/5 pt-6">
            <UserButton afterSignOutUrl="/" />
            {sessionStorage.getItem('is_demo') === 'true' && (
              <button 
                onClick={handleLogout} 
-               className="flex items-center gap-2 text-sm font-bold text-red-400 hover:text-red-300 transition-colors w-max"
+               className="flex items-center gap-2 text-sm font-extrabold text-red-700 hover:text-red-800 transition-colors w-max"
              >
                <LogOut className="w-4 h-4" /> Exit Demo
              </button>
@@ -891,34 +893,34 @@ export default function ResultsDashboard() {
       {/* MAIN LAYOUT: CONDITIONAL TABS */}
       <main className="flex-1 flex flex-col overflow-hidden relative font-sans w-full">
         {/* MOBILE HEADER */}
-        <div className="md:hidden flex items-center justify-between p-4 bg-[#0a0514] border-b border-slate-800/50 z-30 shrink-0">
+        <div className="md:hidden flex items-center justify-between p-4 bg-white/70 border-b border-black/5 z-30 shrink-0 backdrop-blur-md">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-400" />
-            <span className="font-display font-bold text-white tracking-tight">SkillForge AI</span>
+            <Sparkles className="w-5 h-5 text-[#16a34a]" />
+            <span className="font-display font-extrabold text-slate-950 tracking-tight">SkillForge</span>
           </div>
-          <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-400 bg-white/5 rounded-lg border border-white/5">
+          <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-700 bg-white rounded-2xl border border-black/5 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)]">
             <Menu className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="absolute inset-0 magic-blob top-0 right-0 opacity-40 mix-blend-screen pointer-events-none" />
+        <div className="absolute inset-0 pointer-events-none opacity-30" />
 
         {currentView === 'gap' && (
           <div className="flex-1 flex flex-col p-4 md:p-8 lg:p-12 relative z-10 animate-fade-in custom-scrollbar overflow-y-auto w-full">
             <div className="flex justify-between items-end mb-8">
               <div>
-                <h1 className="text-3xl font-display font-medium text-white mb-2 flex items-center gap-3">
+                <h1 className="text-3xl font-display font-black text-slate-950 mb-2 flex items-center gap-3">
                   <Target className="w-8 h-8 text-red-500" /> Interactive Skill Gap Analysis
                 </h1>
-                <p className="text-slate-400 max-w-2xl text-sm">
-                  You have <span className="text-red-400 font-bold">{allModules.filter(m => m.estimated_hours > 5).length} critical gaps</span>, 
-                  <span className="text-yellow-400 font-bold ml-1">{allModules.filter(m => m.estimated_hours <= 5 && m.estimated_hours > 2).length} partial gaps</span>, and 
-                  <span className="text-green-400 font-bold ml-1">{allModules.filter(m => m.estimated_hours <= 2).length} near-competent skills</span> to close before reaching your target role readiness.
+                <p className="text-slate-700 max-w-2xl text-sm">
+                  You have <span className="text-red-600 font-extrabold">{allModules.filter(m => m.estimated_hours > 5).length} critical gaps</span>, 
+                  <span className="text-amber-700 font-extrabold ml-1">{allModules.filter(m => m.estimated_hours <= 5 && m.estimated_hours > 2).length} partial gaps</span>, and 
+                  <span className="text-emerald-700 font-extrabold ml-1">{allModules.filter(m => m.estimated_hours <= 2).length} near-competent skills</span> to close before reaching your target role readiness.
                 </p>
               </div>
               <button 
                 onClick={() => setCurrentView('mindmap')}
-                className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-white font-bold transition-all shadow-lg hover:shadow-white/5"
+                className="px-6 py-3 clay-btn-secondary rounded-2xl font-extrabold transition-all"
               >
                 Generate Learning Plan →
               </button>
@@ -1225,20 +1227,20 @@ export default function ResultsDashboard() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-               <div className="glass-card p-6 border-t-2 border-purple-500 shadow-xl bg-purple-500/5">
-                  <p className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-2">Target Role Gap</p>
-                  <p className="text-4xl font-bold text-white mb-2">{gap_summary?.total_required || allModules.length} Skills</p>
-                  <p className="text-xs text-purple-400">Total skills missing from Job Description</p>
+               <div className="clay-card-sm p-6 border-t-2 border-[#7c3aed]">
+                  <p className="text-sm font-extrabold uppercase tracking-widest text-slate-600 mb-2">Target Role Gap</p>
+                  <p className="text-4xl font-black text-slate-950 mb-2">{gap_summary?.total_required || allModules.length} Skills</p>
+                  <p className="text-xs text-[#7c3aed] font-semibold">Total skills missing from Job Description</p>
                </div>
-               <div className="glass-card p-6 border-t-2 border-emerald-500 shadow-xl bg-emerald-500/5">
-                  <p className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-2">Completed</p>
-                  <p className="text-4xl font-bold text-emerald-400 mb-2">{completedIds.size}</p>
-                  <p className="text-xs text-emerald-500">Skills mastered so far</p>
+               <div className="clay-card-sm p-6 border-t-2 border-emerald-600">
+                  <p className="text-sm font-extrabold uppercase tracking-widest text-slate-600 mb-2">Completed</p>
+                  <p className="text-4xl font-black text-emerald-700 mb-2">{completedIds.size}</p>
+                  <p className="text-xs text-emerald-700 font-semibold">Skills mastered so far</p>
                </div>
-               <div className="glass-card p-6 border-t-2 border-blue-500 shadow-xl bg-blue-500/5">
-                  <p className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-2">Est. Completion</p>
-                  <p className="text-4xl font-bold text-blue-400 mb-2">{Math.ceil((allModules.reduce((acc, m) => acc + (m.estimated_hours || 0), 0) - [...completedIds].reduce((acc, id) => { const mod = allModules.find(m => m.skill === id); return acc + (mod ? (mod.estimated_hours || 0) : 0); }, 0)))} Hrs</p>
-                  <p className="text-xs text-blue-500">Remaining time requirement</p>
+               <div className="clay-card-sm p-6 border-t-2 border-sky-600">
+                  <p className="text-sm font-extrabold uppercase tracking-widest text-slate-600 mb-2">Est. Completion</p>
+                  <p className="text-4xl font-black text-sky-700 mb-2">{Math.ceil((allModules.reduce((acc, m) => acc + (m.estimated_hours || 0), 0) - [...completedIds].reduce((acc, id) => { const mod = allModules.find(m => m.skill === id); return acc + (mod ? (mod.estimated_hours || 0) : 0); }, 0)))} Hrs</p>
+                  <p className="text-xs text-sky-700 font-semibold">Remaining time requirement</p>
                </div>
             </div>
 
@@ -1254,7 +1256,7 @@ export default function ResultsDashboard() {
               </div>
 
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <div className="glass-card p-6 border border-white/10 bg-[#0a0514]/90">
+                <div className="clay-card-sm p-6 border border-black/10 bg-white/85">
                   <h3 className="text-lg font-bold text-white mb-1">Target role: have vs need</h3>
                   <p className="text-xs text-slate-500 mb-4">
                     Matched JD skills ({gap_summary?.matched_count ?? 0} of {gap_summary?.total_required ?? '—'}) vs what is
@@ -1292,7 +1294,7 @@ export default function ResultsDashboard() {
                   </div>
                 </div>
 
-                <div className="glass-card p-6 border border-white/10 bg-[#0a0514]/90">
+                <div className="clay-card-sm p-6 border border-black/10 bg-white/85">
                   <h3 className="text-lg font-bold text-white mb-1">Resume skills → JD alignment</h3>
                   <p className="text-xs text-slate-500 mb-4">
                     Higher bars = stronger match to the job description; lower = extra or weaker overlap.
@@ -1323,7 +1325,7 @@ export default function ResultsDashboard() {
                 </div>
               </div>
 
-              <div className="glass-card p-6 border border-white/10 bg-[#0a0514]/90">
+              <div className="clay-card-sm p-6 border border-black/10 bg-white/85">
                 <h3 className="text-lg font-bold text-white mb-1">Roadmap skills — completion</h3>
                 <p className="text-xs text-slate-500 mb-4">
                   Each bar is a skill required for your target role; 100% when marked complete in the Learning Hub.
@@ -1348,7 +1350,7 @@ export default function ResultsDashboard() {
                 </div>
               </div>
 
-              <div className="glass-card p-6 border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-950/40 to-[#0a0514]">
+              <div className="clay-card p-6 border border-black/10 bg-white/80">
                 <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
                   <div>
                     <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
@@ -1438,7 +1440,7 @@ export default function ResultsDashboard() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-              <div className="glass-card p-8 order-2 lg:order-1 border border-white/5 bg-[#0a0514]/80">
+              <div className="clay-card p-8 order-2 lg:order-1 border border-black/10 bg-white/80">
                  <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
                    <Lock className="w-5 h-5 text-orange-500" /> Skill Acquisition Plan
                  </h2>
@@ -1462,7 +1464,7 @@ export default function ResultsDashboard() {
               </div>
 
               <div className="flex flex-col gap-8 order-1 lg:order-2">
-                <div className="glass-card p-8 border border-white/5 bg-gradient-to-b from-[#150a26] to-[#0a0514]">
+                <div className="clay-card p-8 border border-black/10 bg-white/80">
                    <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-3">
                      <Trophy className="w-5 h-5 text-yellow-500" /> Daily Routine Goals
                    </h2>
@@ -1485,9 +1487,9 @@ export default function ResultsDashboard() {
                    </div>
                 </div>
 
-                <div className="glass-card p-6 border-l-4 border-l-blue-500 bg-blue-500/5 mt-auto">
-                    <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2"><Sparkles className="w-4 h-4 text-blue-400" /> Career Alignment</h3>
-                    <p className="text-sm text-slate-300 mb-2">This curriculum was exclusively built referencing your exact PDF constraints against the Target Job Description via Gemini & TensorFlow.</p>
+                <div className="clay-card-sm p-6 border-l-4 border-l-sky-600 bg-white/80 mt-auto">
+                    <h3 className="text-base font-extrabold text-slate-950 mb-2 flex items-center gap-2"><Sparkles className="w-4 h-4 text-sky-600" /> Career Alignment</h3>
+                    <p className="text-sm text-slate-700 mb-2">This curriculum was exclusively built referencing your exact PDF constraints against the Target Job Description via Gemini & TensorFlow.</p>
                 </div>
               </div>
             </div>

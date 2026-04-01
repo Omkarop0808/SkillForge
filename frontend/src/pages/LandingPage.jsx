@@ -89,45 +89,47 @@ export default function LandingPage() {
       </div>
 
       {/* Header */}
-      <header className="fixed top-0 w-full z-50 flex items-center justify-between px-6 md:px-10 py-4 bg-[#f7fbf2]/80 backdrop-blur-md border-b border-black/5">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
-          <div className="w-10 h-10 rounded-2xl bg-white shadow-[0_14px_0_rgba(0,0,0,0.10)] border border-black/5 flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-[#16a34a]" />
+      <header className="fixed top-0 w-full z-50 bg-[#f7fbf2]/80 backdrop-blur-md border-b border-black/5">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-10 py-4">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
+            <div className="w-10 h-10 rounded-2xl bg-white border border-black/5 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-[#16a34a]" />
+            </div>
+            <span className="text-lg md:text-xl font-display font-extrabold text-slate-900">SkillForge</span>
           </div>
-          <span className="text-lg md:text-xl font-display font-extrabold text-slate-900">SkillForge</span>
-        </div>
-        
-        {/* Navigation Pills */}
-        <div className="hidden md:flex items-center gap-6 px-7 py-2.5 rounded-full bg-white/70 border border-black/5 shadow-[0_14px_0_rgba(0,0,0,0.08)] text-sm text-slate-700">
-          <span onClick={() => scrollToSection('features')} className="hover:text-slate-950 cursor-pointer transition-colors font-semibold">Features</span>
-          <span onClick={() => scrollToSection('catalog')} className="hover:text-slate-950 cursor-pointer transition-colors font-semibold">Catalog</span>
-          <span onClick={() => scrollToSection('how-it-works')} className="hover:text-slate-950 cursor-pointer transition-colors font-semibold">How it Works</span>
-          <span onClick={() => navigate('/skill-sphere')} className="hover:text-[#7c3aed] cursor-pointer transition-colors inline-flex items-center gap-1 font-semibold">
-            <Orbit className="w-3.5 h-3.5" /> Skill Sphere
-          </span>
-          <span onClick={() => scrollToSection('faq')} className="hover:text-slate-950 cursor-pointer transition-colors font-semibold">FAQ</span>
-        </div>
+          
+          {/* Navigation Pills */}
+          <div className="hidden md:flex items-center gap-6 px-7 py-2.5 rounded-full bg-white/75 border border-black/5 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] text-sm text-slate-700">
+            <span onClick={() => scrollToSection('features')} className="hover:text-slate-950 cursor-pointer transition-colors font-semibold">Features</span>
+            <span onClick={() => scrollToSection('catalog')} className="hover:text-slate-950 cursor-pointer transition-colors font-semibold">Catalog</span>
+            <span onClick={() => scrollToSection('how-it-works')} className="hover:text-slate-950 cursor-pointer transition-colors font-semibold">How it Works</span>
+            <span onClick={() => navigate('/skill-sphere')} className="hover:text-[#7c3aed] cursor-pointer transition-colors inline-flex items-center gap-1 font-semibold">
+              <Orbit className="w-3.5 h-3.5" /> Skill Sphere
+            </span>
+            <span onClick={() => scrollToSection('faq')} className="hover:text-slate-950 cursor-pointer transition-colors font-semibold">FAQ</span>
+          </div>
 
-        <div className="flex items-center gap-6">
-          <SignedOut>
-            <SignInButton mode="modal">
-              <span className="text-sm text-slate-700 hover:text-slate-950 cursor-pointer transition-colors font-semibold">Log in</span>
-            </SignInButton>
-            <SignInButton mode="modal" fallbackRedirectUrl="/upload">
-              <button className="px-5 py-2.5 rounded-full text-sm font-extrabold bg-[#22c55e] text-slate-950 border border-black/10 shadow-[0_16px_0_rgba(0,0,0,0.12)] hover:translate-y-[1px] hover:shadow-[0_12px_0_rgba(0,0,0,0.12)] transition-all">
-                Start Free
+          <div className="flex items-center gap-6">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <span className="text-sm text-slate-700 hover:text-slate-950 cursor-pointer transition-colors font-semibold">Log in</span>
+              </SignInButton>
+              <SignInButton mode="modal" fallbackRedirectUrl="/upload">
+                <button className="px-5 py-2.5 rounded-full text-sm font-extrabold bg-[#22c55e] text-slate-950 border border-black/10 shadow-[0_12px_0_rgba(15,23,42,0.12),0_22px_50px_rgba(15,23,42,0.08)] hover:translate-y-[1px] hover:shadow-[0_9px_0_rgba(15,23,42,0.12),0_18px_44px_rgba(15,23,42,0.08)] transition-all">
+                  Start Free
+                </button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <button
+                onClick={() => navigate('/upload')}
+                className="px-5 py-2.5 rounded-full text-sm font-extrabold bg-[#22c55e] text-slate-950 border border-black/10 shadow-[0_12px_0_rgba(15,23,42,0.12),0_22px_50px_rgba(15,23,42,0.08)] hover:translate-y-[1px] hover:shadow-[0_9px_0_rgba(15,23,42,0.12),0_18px_44px_rgba(15,23,42,0.08)] transition-all mr-2"
+              >
+                Go to Dashboard
               </button>
-            </SignInButton>
-          </SignedOut>
-          <SignedIn>
-            <button
-              onClick={() => navigate('/upload')}
-              className="px-5 py-2.5 rounded-full text-sm font-extrabold bg-[#22c55e] text-slate-950 border border-black/10 shadow-[0_16px_0_rgba(0,0,0,0.12)] hover:translate-y-[1px] hover:shadow-[0_12px_0_rgba(0,0,0,0.12)] transition-all mr-2"
-            >
-              Go to Dashboard
-            </button>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+          </div>
         </div>
       </header>
 
@@ -169,9 +171,9 @@ export default function LandingPage() {
               {highlights.map((h, idx) => (
                 <div
                   key={idx}
-                  className="rounded-3xl bg-white/75 border border-black/5 shadow-[0_18px_0_rgba(0,0,0,0.08)] p-4"
+                  className="rounded-3xl bg-white/80 border border-black/5 shadow-[0_12px_0_rgba(15,23,42,0.10),0_22px_50px_rgba(15,23,42,0.06)] p-4 h-full"
                 >
-                  <div className="w-10 h-10 rounded-2xl bg-white border border-black/5 shadow-[0_12px_0_rgba(0,0,0,0.10)] flex items-center justify-center mb-3">
+                  <div className="w-10 h-10 rounded-2xl bg-white border border-black/5 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] flex items-center justify-center mb-3">
                     {h.icon}
                   </div>
                   <p className="text-sm font-extrabold text-slate-900">{h.title}</p>
@@ -186,10 +188,10 @@ export default function LandingPage() {
             <div className="absolute -top-6 -left-6 w-24 h-24 rounded-[28px] bg-white/70 border border-black/5 shadow-[0_18px_0_rgba(0,0,0,0.08)] rotate-[-6deg]" />
             <div className="absolute -bottom-6 -right-6 w-24 h-24 rounded-[28px] bg-white/70 border border-black/5 shadow-[0_18px_0_rgba(0,0,0,0.08)] rotate-[7deg]" />
 
-            <div className="rounded-[34px] bg-white/80 border border-black/5 shadow-[0_22px_0_rgba(0,0,0,0.10)] p-6 backdrop-blur">
+            <div className="rounded-[34px] bg-white/85 border border-black/5 shadow-[0_14px_0_rgba(15,23,42,0.12),0_28px_70px_rgba(15,23,42,0.10)] p-6 backdrop-blur">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#dbeafe] to-[#fdf2f8] border border-black/5 shadow-[0_14px_0_rgba(0,0,0,0.10)] flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#dbeafe] to-[#fdf2f8] border border-black/5 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] flex items-center justify-center">
                     <Target className="w-5 h-5 text-[#0ea5e9]" />
                   </div>
                   <div>
@@ -208,7 +210,7 @@ export default function LandingPage() {
 
               <button
                 onClick={() => navigate('/upload')}
-                className="mt-5 w-full px-5 py-3 rounded-2xl bg-[#22c55e] text-slate-950 font-extrabold border border-black/10 shadow-[0_18px_0_rgba(0,0,0,0.12)] hover:translate-y-[1px] hover:shadow-[0_14px_0_rgba(0,0,0,0.12)] transition-all"
+                className="mt-5 w-full px-5 py-3 rounded-2xl bg-[#22c55e] text-slate-950 font-extrabold border border-black/10 shadow-[0_12px_0_rgba(15,23,42,0.12),0_22px_50px_rgba(15,23,42,0.08)] hover:translate-y-[1px] hover:shadow-[0_9px_0_rgba(15,23,42,0.12),0_18px_44px_rgba(15,23,42,0.08)] transition-all"
               >
                 Continue Learning
               </button>
@@ -218,9 +220,9 @@ export default function LandingPage() {
               {courses.slice(0, 2).map((c) => (
                 <div
                   key={c.title}
-                  className="rounded-[30px] bg-white/80 border border-black/5 shadow-[0_20px_0_rgba(0,0,0,0.10)] p-5 backdrop-blur"
+                  className="rounded-[30px] bg-white/85 border border-black/5 shadow-[0_12px_0_rgba(15,23,42,0.10),0_22px_50px_rgba(15,23,42,0.06)] p-5 backdrop-blur h-full"
                 >
-                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${c.color} border border-black/5 shadow-[0_14px_0_rgba(0,0,0,0.10)] flex items-center justify-center font-extrabold text-slate-900`}>
+                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${c.color} border border-black/5 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] flex items-center justify-center font-extrabold text-slate-900`}>
                     {c.icon}
                   </div>
                   <p className="mt-3 text-sm font-extrabold text-slate-950">{c.title}</p>
@@ -228,7 +230,7 @@ export default function LandingPage() {
                   <div className="mt-3 flex items-center justify-between text-xs text-slate-700 font-semibold">
                     <span>{c.lessons} lessons</span>
                     <span>{c.hours}h</span>
-                    <span className="px-2 py-1 rounded-full bg-white border border-black/5 shadow-[0_10px_0_rgba(0,0,0,0.08)]">★ {c.rating}</span>
+                    <span className="px-2 py-1 rounded-full bg-white border border-black/5 shadow-[0_8px_0_rgba(15,23,42,0.10),0_14px_30px_rgba(15,23,42,0.05)]">★ {c.rating}</span>
                   </div>
                 </div>
               ))}
@@ -273,7 +275,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="mt-10 rounded-[36px] bg-white/75 border border-black/5 shadow-[0_24px_0_rgba(0,0,0,0.10)] p-8 backdrop-blur">
+          <div className="mt-10 rounded-[36px] bg-white/80 border border-black/5 shadow-[0_14px_0_rgba(15,23,42,0.12),0_32px_80px_rgba(15,23,42,0.10)] p-8 backdrop-blur">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
               <div>
                 <h3 className="text-2xl font-display font-black text-slate-950">Course catalog preview</h3>
@@ -284,7 +286,7 @@ export default function LandingPage() {
               <button
                 type="button"
                 onClick={() => navigate('/upload')}
-                className="px-6 py-3 rounded-2xl bg-white text-slate-950 font-extrabold border border-black/5 shadow-[0_18px_0_rgba(0,0,0,0.10)] hover:bg-white/90 transition-all"
+                className="px-6 py-3 rounded-2xl bg-white text-slate-950 font-extrabold border border-black/5 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] hover:bg-white/90 transition-all"
               >
                 View your roadmap →
               </button>
@@ -293,11 +295,11 @@ export default function LandingPage() {
               {courses.map((c) => (
                 <div
                   key={c.title}
-                  className="rounded-[30px] bg-white/80 border border-black/5 shadow-[0_18px_0_rgba(0,0,0,0.10)] p-5"
+                  className="rounded-[30px] bg-white/85 border border-black/5 shadow-[0_12px_0_rgba(15,23,42,0.10),0_22px_50px_rgba(15,23,42,0.06)] p-5 h-full"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-4">
-                      <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${c.color} border border-black/5 shadow-[0_14px_0_rgba(0,0,0,0.10)] flex items-center justify-center font-extrabold text-slate-900`}>
+                      <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${c.color} border border-black/5 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] flex items-center justify-center font-extrabold text-slate-900`}>
                         {c.icon}
                       </div>
                       <div>
@@ -305,7 +307,7 @@ export default function LandingPage() {
                         <p className="text-xs text-slate-600">by {c.author}</p>
                       </div>
                     </div>
-                    <span className="text-xs px-3 py-1 rounded-full bg-white border border-black/5 shadow-[0_10px_0_rgba(0,0,0,0.08)] font-extrabold text-slate-800">
+                    <span className="text-xs px-3 py-1 rounded-full bg-white border border-black/5 shadow-[0_8px_0_rgba(15,23,42,0.10),0_14px_30px_rgba(15,23,42,0.05)] font-extrabold text-slate-800">
                       ★ {c.rating}
                     </span>
                   </div>
@@ -347,7 +349,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="mt-10 rounded-[36px] bg-white/75 border border-black/5 shadow-[0_24px_0_rgba(0,0,0,0.10)] p-8">
+          <div className="mt-10 rounded-[36px] bg-white/80 border border-black/5 shadow-[0_14px_0_rgba(15,23,42,0.12),0_32px_80px_rgba(15,23,42,0.10)] p-8">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
               <div>
                 <h3 className="text-2xl font-display font-black text-slate-950">Student testimonials</h3>
@@ -356,7 +358,7 @@ export default function LandingPage() {
               <button
                 type="button"
                 onClick={() => navigate('/skill-sphere')}
-                className="px-6 py-3 rounded-2xl bg-white text-slate-950 font-extrabold border border-black/5 shadow-[0_18px_0_rgba(0,0,0,0.10)] hover:bg-white/90 transition-all"
+                className="px-6 py-3 rounded-2xl bg-white text-slate-950 font-extrabold border border-black/5 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] hover:bg-white/90 transition-all"
               >
                 Explore Skill Sphere →
               </button>
@@ -365,7 +367,7 @@ export default function LandingPage() {
               {testimonials.map((t) => (
                 <div
                   key={t.name}
-                  className="rounded-[30px] bg-white/85 border border-black/5 shadow-[0_18px_0_rgba(0,0,0,0.10)] p-6"
+                  className="rounded-[30px] bg-white/90 border border-black/5 shadow-[0_12px_0_rgba(15,23,42,0.10),0_22px_50px_rgba(15,23,42,0.06)] p-6 h-full"
                 >
                   <p className="text-sm text-slate-800 leading-relaxed">“{t.quote}”</p>
                   <div className="mt-4 flex items-center justify-between">
@@ -373,7 +375,7 @@ export default function LandingPage() {
                       <p className="text-sm font-extrabold text-slate-950">{t.name}</p>
                       <p className="text-xs text-slate-600">{t.role}</p>
                     </div>
-                    <div className="w-10 h-10 rounded-2xl bg-white border border-black/5 shadow-[0_14px_0_rgba(0,0,0,0.10)] flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-2xl bg-white border border-black/5 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] flex items-center justify-center">
                       <Sparkles className="w-4 h-4 text-[#22c55e]" />
                     </div>
                   </div>
@@ -402,7 +404,7 @@ export default function LandingPage() {
       {/* Enrollment CTA */}
       <section className="relative z-10 pb-20">
         <div className="max-w-6xl mx-auto px-6 md:px-10">
-          <div className="rounded-[40px] bg-white/80 border border-black/5 shadow-[0_26px_0_rgba(0,0,0,0.10)] p-10 overflow-hidden relative">
+          <div className="rounded-[40px] bg-white/85 border border-black/5 shadow-[0_14px_0_rgba(15,23,42,0.12),0_36px_90px_rgba(15,23,42,0.10)] p-10 overflow-hidden relative">
             <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-gradient-to-br from-[#22c55e] to-[#0ea5e9] blur-3xl opacity-25" />
             <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-gradient-to-br from-[#fda4af] to-[#a78bfa] blur-3xl opacity-25" />
             <div className="relative flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
@@ -416,13 +418,13 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                 <button
                   onClick={() => navigate('/upload')}
-                  className="px-7 py-3.5 rounded-2xl bg-[#22c55e] text-slate-950 font-extrabold border border-black/10 shadow-[0_18px_0_rgba(0,0,0,0.12)] hover:translate-y-[1px] hover:shadow-[0_14px_0_rgba(0,0,0,0.12)] transition-all w-full sm:w-auto"
+                  className="px-7 py-3.5 rounded-2xl bg-[#22c55e] text-slate-950 font-extrabold border border-black/10 shadow-[0_12px_0_rgba(15,23,42,0.12),0_22px_50px_rgba(15,23,42,0.08)] hover:translate-y-[1px] hover:shadow-[0_9px_0_rgba(15,23,42,0.12),0_18px_44px_rgba(15,23,42,0.08)] transition-all w-full sm:w-auto"
                 >
                   Start Free →
                 </button>
                 <button
                   onClick={() => navigate('/skill-sphere')}
-                  className="px-7 py-3.5 rounded-2xl bg-white text-slate-950 font-extrabold border border-black/5 shadow-[0_18px_0_rgba(0,0,0,0.10)] hover:bg-white/90 transition-all w-full sm:w-auto"
+                  className="px-7 py-3.5 rounded-2xl bg-white text-slate-950 font-extrabold border border-black/5 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] hover:bg-white/90 transition-all w-full sm:w-auto"
                 >
                   Open Skill Sphere
                 </button>

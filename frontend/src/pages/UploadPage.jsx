@@ -73,43 +73,41 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen relative bg-[#06020c]">
-      {/* Background Magic Blobs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="magic-blob top-[-10%] right-[-5%]" style={{ animationDelay: '-1s' }} />
-        <div className="magic-blob bottom-[-10%] left-[-5%]" style={{ animationDelay: '-3s' }} />
-      </div>
-
+    <div className="min-h-screen relative clay-hero-bg">
       {/* Header */}
-      <header className="relative z-20 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
-        <div className="flex items-center gap-3">
-          <Sparkles className="w-6 h-6 text-purple-400" />
-          <span className="text-xl font-display font-bold text-white cursor-pointer" onClick={() => navigate('/')}>
-            SkillForge AI
-          </span>
+      <header className="relative z-20 border-b border-black/5 bg-white/40 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-10 py-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-white border border-black/5 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-[#16a34a]" />
+            </div>
+            <span className="text-lg md:text-xl font-display font-extrabold text-slate-950 cursor-pointer" onClick={() => navigate('/')}>
+              SkillForge
+            </span>
+          </div>
+          <UserButton afterSignOutUrl="/" />
         </div>
-        <UserButton afterSignOutUrl="/" />
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 max-w-6xl mx-auto px-8 py-8 animate-slide-up">
+      <main className="relative z-10 max-w-6xl mx-auto px-6 md:px-10 py-10 md:py-12 animate-slide-up">
         <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-5xl font-display font-medium text-white mb-4">
+          <h1 className="text-3xl md:text-5xl font-display font-black text-slate-950 mb-3">
             Analyze Your Skill Gap
           </h1>
-          <p className="text-slate-400 max-w-xl mx-auto">
+          <p className="text-slate-700 max-w-xl mx-auto">
             Upload your resume and paste the job description to instantly build your personalized learning roadmap.
           </p>
         </div>
 
         {/* Domain Toggle */}
         <div className="flex justify-center mb-8" id="domain-toggle">
-          <div className="glass-card inline-flex p-1.5 gap-1">
+          <div className="clay-pill inline-flex p-1.5 gap-1">
             <button
               className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 domain === 'tech'
-                  ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#7c3aed] text-white shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)]'
+                  : 'text-slate-700 hover:text-slate-950'
               }`}
               onClick={() => setDomain('tech')}
             >
@@ -118,8 +116,8 @@ export default function UploadPage() {
             <button
               className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 domain === 'operational'
-                  ? 'bg-[#10b981] text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#22c55e] text-slate-950 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)]'
+                  : 'text-slate-700 hover:text-slate-950'
               }`}
               onClick={() => setDomain('operational')}
             >
@@ -131,26 +129,28 @@ export default function UploadPage() {
         {/* Two Column Upload */}
         <div className="grid md:grid-cols-2 gap-8 animate-slide-up">
           {/* Left: Resume Upload */}
-          <div className="glass-card p-8">
+          <div className="clay-card p-8">
             <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
-              <Upload className="w-5 h-5 text-blue-400" />
+              <Upload className="w-5 h-5 text-[#0ea5e9]" />
               Upload Your Resume
             </h2>
-            <p className="text-sm text-slate-400 mb-6">PDF format, max 5MB</p>
+            <p className="text-sm text-slate-600 mb-6">PDF format, max 5MB</p>
 
             <div
               {...getRootProps()}
-              className={`dropzone ${isDragActive ? 'dropzone-active' : ''} ${resumeFile ? 'border-green-500/40 bg-green-500/10' : ''}`}
+              className={`rounded-[26px] border-2 border-dashed p-10 text-center cursor-pointer transition-all bg-white/70 shadow-[inset_0_2px_0_rgba(15,23,42,0.06)] ${
+                isDragActive ? 'border-[#7c3aed]/50 bg-white' : 'border-black/10 hover:border-[#7c3aed]/40'
+              } ${resumeFile ? 'border-[#22c55e]/50 bg-white' : ''}`}
               id="resume-dropzone"
             >
               <input {...getInputProps()} />
               {resumeFile ? (
                 <div className="flex flex-col items-center gap-3">
-                  <FileText className="w-10 h-10 text-green-400" />
-                  <p className="text-green-300 font-medium">{resumeFile.name}</p>
-                  <p className="text-xs text-slate-400">{(resumeFile.size / 1024).toFixed(1)} KB</p>
+                  <FileText className="w-10 h-10 text-[#16a34a]" />
+                  <p className="text-slate-950 font-extrabold">{resumeFile.name}</p>
+                  <p className="text-xs text-slate-600">{(resumeFile.size / 1024).toFixed(1)} KB</p>
                   <button
-                    className="text-xs text-red-400 hover:text-red-300 mt-2 px-3 py-1 rounded bg-red-400/10"
+                    className="text-xs text-red-700 hover:text-red-800 mt-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20"
                     onClick={(e) => { e.stopPropagation(); setResumeFile(null) }}
                   >
                     Remove File
@@ -158,29 +158,29 @@ export default function UploadPage() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-3 py-4">
-                  <Upload className="w-10 h-10 text-purple-400/50" />
-                  <p className="text-slate-300">
+                  <Upload className="w-10 h-10 text-slate-500" />
+                  <p className="text-slate-800 font-semibold">
                     {isDragActive ? 'Drop your resume here...' : 'Drag & drop your resume PDF'}
                   </p>
-                  <p className="text-xs text-slate-500">or click to browse</p>
+                  <p className="text-xs text-slate-600">or click to browse</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Right: JD Input */}
-          <div className="glass-card p-8">
+          <div className="clay-card p-8">
             <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-purple-400" />
+              <FileText className="w-5 h-5 text-[#7c3aed]" />
               Paste Job Description
             </h2>
-            <p className="text-sm text-slate-400 mb-3">Minimum 50 words for accurate analysis</p>
+            <p className="text-sm text-slate-600 mb-3">Minimum 50 words for accurate analysis</p>
 
             {/* Sample JD Dropdown */}
             <div className="mb-3">
               <select
                 id="sample-jd-select"
-                className="w-full bg-surface-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-blue-500/50 cursor-pointer"
+                className="w-full bg-white/80 border border-black/10 rounded-2xl px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-[#7c3aed]/40 cursor-pointer shadow-[inset_0_2px_0_rgba(15,23,42,0.06)]"
                 value=""
                 onChange={(e) => {
                   const selected = sampleJDs.find(j => j.title === e.target.value)
@@ -202,14 +202,16 @@ export default function UploadPage() {
 
             <textarea
               id="jd-textarea"
-              className="w-full h-[215px] bg-[#0a0514]/50 border border-slate-700/50 rounded-xl p-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/25 transition-all resize-none text-sm shadow-inner"
+              className="w-full h-[215px] bg-white/80 border border-black/10 rounded-[26px] p-4 text-slate-900 placeholder-slate-500 focus:outline-none focus:border-[#7c3aed]/40 focus:ring-1 focus:ring-[#7c3aed]/15 transition-all resize-none text-sm shadow-[inset_0_2px_0_rgba(15,23,42,0.06)]"
               placeholder="Paste the full job description here...&#10;&#10;Include responsibilities, qualifications, and required skills for the best analysis."
               value={jdText}
               onChange={(e) => { setJdText(e.target.value); setError('') }}
             />
 
             <div className="flex justify-between items-center mt-3">
-              <span className={`text-xs px-2 py-1 rounded bg-black/20 ${jdText.trim().split(/\s+/).filter(Boolean).length < 50 ? 'text-amber-400' : 'text-green-400'}`}>
+              <span className={`text-xs px-3 py-1 rounded-full bg-white border border-black/10 shadow-[0_8px_0_rgba(15,23,42,0.08),0_14px_30px_rgba(15,23,42,0.05)] ${
+                jdText.trim().split(/\s+/).filter(Boolean).length < 50 ? 'text-amber-700' : 'text-emerald-700'
+              }`}>
                 {jdText.trim().split(/\s+/).filter(Boolean).length} words
                 {jdText.trim().split(/\s+/).filter(Boolean).length < 50 && ' (min 50)'}
               </span>
@@ -219,9 +221,9 @@ export default function UploadPage() {
 
         {/* Error Display */}
         {error && (
-          <div className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 animate-fade-in max-w-2xl mx-auto">
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-            <p className="text-sm text-red-300">{error}</p>
+          <div className="mt-6 p-4 rounded-[22px] bg-white/80 border border-red-500/20 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] flex items-center gap-3 animate-fade-in max-w-2xl mx-auto">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <p className="text-sm text-red-700 font-semibold">{error}</p>
           </div>
         )}
 
@@ -229,13 +231,13 @@ export default function UploadPage() {
         <div className="text-center mt-10">
           <button
             id="analyze-button"
-            className="btn-primary text-lg px-12 py-4 inline-flex items-center gap-3"
+            className="clay-btn text-lg px-12 py-4 inline-flex items-center gap-3"
             onClick={handleAnalyze}
             disabled={loading}
           >
             {loading ? (
               <>
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
                 Processing...
               </>
             ) : (

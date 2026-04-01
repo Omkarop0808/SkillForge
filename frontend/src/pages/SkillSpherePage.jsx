@@ -160,28 +160,25 @@ export default function SkillSpherePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#06020c] text-slate-200">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="magic-blob top-[-10%] right-[-5%]" style={{ animationDelay: '-1s' }} />
-        <div className="magic-blob bottom-[-10%] left-[-5%]" style={{ animationDelay: '-3s' }} />
-      </div>
-
-      <header className="relative z-10 border-b border-white/10 bg-[#06020c]/90 backdrop-blur-md">
+    <div className="min-h-screen clay-hero-bg text-slate-900">
+      <header className="relative z-10 border-b border-black/5 bg-white/40 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => navigate(base.hasAnalysis ? '/dashboard' : '/')}
-              className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-sm text-slate-700 hover:text-slate-950 transition-colors font-semibold"
             >
               <ArrowLeft className="w-4 h-4" />
               {base.hasAnalysis ? 'Back to dashboard' : 'Home'}
             </button>
             <div className="h-6 w-px bg-white/10 hidden sm:block" />
             <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-fuchsia-400" />
-              <span className="font-display font-bold text-white">Skill Sphere</span>
-              <span className="text-xs text-slate-500 hidden sm:inline">powered by SkillForge + Gemini</span>
+              <div className="w-9 h-9 rounded-2xl bg-white border border-black/5 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-[#16a34a]" />
+              </div>
+              <span className="font-display font-extrabold text-slate-950">Skill Sphere</span>
+              <span className="text-xs text-slate-600 hidden sm:inline">career command center</span>
             </div>
           </div>
           <UserButton afterSignOutUrl="/" />
@@ -189,32 +186,32 @@ export default function SkillSpherePage() {
       </header>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 py-8 space-y-8">
-        <p className="text-slate-400 text-sm max-w-3xl leading-relaxed">
+        <p className="text-slate-700 text-sm max-w-3xl leading-relaxed">
           Welcome to Skill Sphere — plan your next move, practice with confidence, and keep everything aligned with your
           SkillForge profile.
         </p>
 
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
-          <p className="text-xs font-bold text-slate-500 tracking-widest uppercase">Context</p>
+        <div className="clay-card p-5 space-y-3">
+          <p className="text-xs font-extrabold text-slate-600 tracking-widest uppercase">Context</p>
           {base.hasAnalysis ? (
-            <p className="text-sm text-emerald-400/90">
+            <p className="text-sm text-emerald-700 font-semibold">
               Using your last upload analysis (resume text + JD + gap skills). You can still paste more below to override
               empty fields.
             </p>
           ) : (
-            <p className="text-sm text-amber-400/90">
+            <p className="text-sm text-amber-700 font-semibold">
               No analysis session found. Paste resume text (and optionally a target JD) for best results — or run an
               analysis from Upload first.
             </p>
           )}
           <textarea
-            className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm min-h-[100px] placeholder:text-slate-600"
+            className="w-full rounded-[22px] bg-white/85 border border-black/10 p-3 text-sm min-h-[100px] placeholder:text-slate-500 shadow-[inset_0_2px_0_rgba(15,23,42,0.06)]"
             placeholder="Resume text (optional override / fill-in)"
             value={manualResume}
             onChange={(e) => setManualResume(e.target.value)}
           />
           <textarea
-            className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm min-h-[80px] placeholder:text-slate-600"
+            className="w-full rounded-[22px] bg-white/85 border border-black/10 p-3 text-sm min-h-[80px] placeholder:text-slate-500 shadow-[inset_0_2px_0_rgba(15,23,42,0.06)]"
             placeholder="Target job description (optional override)"
             value={manualJd}
             onChange={(e) => setManualJd(e.target.value)}
@@ -222,7 +219,9 @@ export default function SkillSpherePage() {
         </div>
 
         {err && (
-          <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">{err}</div>
+          <div className="rounded-2xl border border-red-500/25 bg-white/80 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] px-4 py-3 text-sm text-red-700 font-semibold">
+            {err}
+          </div>
         )}
 
         <div className="flex flex-wrap gap-2">
@@ -231,10 +230,10 @@ export default function SkillSpherePage() {
               key={t.id}
               type="button"
               onClick={() => setTab(t.id)}
-              className={`px-3 py-2 rounded-full text-sm border transition-all ${
+              className={`px-3 py-2 rounded-full text-sm border transition-all font-extrabold ${
                 tab === t.id
-                  ? 'bg-fuchsia-600/30 border-fuchsia-500/50 text-white'
-                  : 'border-white/10 text-slate-400 hover:border-white/20 hover:text-white'
+                  ? 'bg-white border-black/10 text-slate-950 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)]'
+                  : 'border-black/10 bg-white/60 text-slate-700 hover:bg-white hover:text-slate-950'
               }`}
             >
               <span className="mr-1.5">{t.icon}</span>
@@ -243,13 +242,13 @@ export default function SkillSpherePage() {
           ))}
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-[#0a0514]/80 p-6 min-h-[320px]">
+        <div className="clay-card p-6 min-h-[320px]">
           {tab === 'persona' && (
             <section className="space-y-4">
-              <h2 className="text-xl font-display font-semibold text-white flex items-center gap-2">
+              <h2 className="text-xl font-display font-black text-slate-950 flex items-center gap-2">
                 <span>🎭</span> Career Persona
               </h2>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-slate-700">
                 Strengths, growth areas, and value proposition from your resume + target role context.
               </p>
               <button
@@ -261,36 +260,36 @@ export default function SkillSpherePage() {
                     setPersona(res.persona)
                   })
                 }
-                className="btn-primary px-5 py-2 rounded-full text-sm disabled:opacity-40"
+                className="clay-btn px-5 py-2 rounded-full text-sm disabled:opacity-40"
               >
                 {busy ? <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> : null}
                 Generate persona
               </button>
               {persona && (
-                <div className="mt-4 space-y-3 text-sm border border-white/10 rounded-xl p-4 bg-black/30">
-                  <p className="text-fuchsia-300 font-medium">{persona.headline}</p>
-                  <p className="text-slate-300 whitespace-pre-wrap">{persona.narrative}</p>
-                  <p className="text-slate-400 font-medium">UVP</p>
-                  <p className="text-slate-300">{persona.unique_value_proposition}</p>
+                <div className="mt-4 space-y-3 text-sm border border-black/10 rounded-3xl p-5 bg-white/80 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)]">
+                  <p className="text-[#7c3aed] font-extrabold">{persona.headline}</p>
+                  <p className="text-slate-800 whitespace-pre-wrap">{persona.narrative}</p>
+                  <p className="text-slate-600 font-extrabold">UVP</p>
+                  <p className="text-slate-800">{persona.unique_value_proposition}</p>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-emerald-400/90 text-xs uppercase tracking-wider mb-1">Strengths</p>
-                      <ul className="list-disc list-inside text-slate-300 space-y-1">
+                      <p className="text-emerald-700 text-xs uppercase tracking-wider mb-1 font-extrabold">Strengths</p>
+                      <ul className="list-disc list-inside text-slate-800 space-y-1">
                         {(persona.strengths || []).map((s, i) => (
                           <li key={i}>{s}</li>
                         ))}
                       </ul>
                     </div>
                     <div>
-                      <p className="text-amber-400/90 text-xs uppercase tracking-wider mb-1">Growth areas</p>
-                      <ul className="list-disc list-inside text-slate-300 space-y-1">
+                      <p className="text-amber-700 text-xs uppercase tracking-wider mb-1 font-extrabold">Growth areas</p>
+                      <ul className="list-disc list-inside text-slate-800 space-y-1">
                         {(persona.weaknesses_or_growth_areas || []).map((s, i) => (
                           <li key={i}>{s}</li>
                         ))}
                       </ul>
                     </div>
                   </div>
-                  <p className="text-slate-500 text-xs">Suggested roles: {(persona.suggested_roles || []).join(' · ')}</p>
+                  <p className="text-slate-600 text-xs font-semibold">Suggested roles: {(persona.suggested_roles || []).join(' · ')}</p>
                 </div>
               )}
             </section>
@@ -298,25 +297,25 @@ export default function SkillSpherePage() {
 
           {tab === 'coach' && (
             <section className="space-y-4 flex flex-col h-[min(70vh,560px)]">
-              <h2 className="text-xl font-display font-semibold text-white flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-sky-400" /> AI Career Coach
+              <h2 className="text-xl font-display font-black text-slate-950 flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-[#0ea5e9]" /> AI Career Coach
               </h2>
-              <div className="flex-1 overflow-y-auto space-y-3 pr-1 border border-white/10 rounded-xl p-3 bg-black/30">
+              <div className="flex-1 overflow-y-auto space-y-3 pr-1 border border-black/10 rounded-3xl p-3 bg-white/80 shadow-[inset_0_2px_0_rgba(15,23,42,0.06)]">
                 {coachMessages.map((m, i) => (
                   <div
                     key={i}
                     className={`rounded-lg px-3 py-2 text-sm max-w-[95%] ${
-                      m.role === 'user' ? 'bg-fuchsia-600/25 ml-auto text-right' : 'bg-white/5 text-slate-300'
+                      m.role === 'user' ? 'bg-[#7c3aed]/10 ml-auto text-right' : 'bg-white text-slate-800 border border-black/5'
                     }`}
                   >
-                    <span className="text-xs text-slate-500 block mb-1">{m.role}</span>
+                    <span className="text-xs text-slate-600 block mb-1 font-semibold">{m.role}</span>
                     <div className="whitespace-pre-wrap text-left">{m.content}</div>
                   </div>
                 ))}
               </div>
               <div className="flex gap-2">
                 <input
-                  className="flex-1 rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm"
+                  className="flex-1 rounded-2xl bg-white/85 border border-black/10 px-3 py-2 text-sm shadow-[inset_0_2px_0_rgba(15,23,42,0.06)]"
                   placeholder="Ask for role recommendations, negotiation tips, gap analysis..."
                   value={coachInput}
                   onChange={(e) => setCoachInput(e.target.value)}
@@ -348,7 +347,7 @@ export default function SkillSpherePage() {
                       ])
                     })
                   }
-                  className="btn-primary px-4 py-2 rounded-xl text-sm shrink-0 disabled:opacity-40"
+                  className="clay-btn px-4 py-2 rounded-2xl text-sm shrink-0 disabled:opacity-40"
                 >
                   {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send'}
                 </button>
@@ -358,35 +357,35 @@ export default function SkillSpherePage() {
 
           {tab === 'jobs' && (
             <section className="space-y-4">
-              <h2 className="text-xl font-display font-semibold text-white flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-blue-400" /> LinkedIn Job Tracker
+              <h2 className="text-xl font-display font-black text-slate-950 flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-[#0ea5e9]" /> LinkedIn Job Tracker
               </h2>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-slate-700">
                 Save roles locally (paste from LinkedIn or any board). Use <strong className="text-slate-300">AI match</strong>{' '}
                 for an instant fit score. A browser extension can POST the same payload to{' '}
                 <code className="text-fuchsia-300/90">POST /api/skill-sphere/job-match</code>.
               </p>
               <div className="grid sm:grid-cols-2 gap-3">
                 <input
-                  className="rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm"
+                  className="rounded-2xl bg-white/85 border border-black/10 px-3 py-2 text-sm shadow-[inset_0_2px_0_rgba(15,23,42,0.06)]"
                   placeholder="Job title"
                   value={jobForm.title}
                   onChange={(e) => setJobForm((f) => ({ ...f, title: e.target.value }))}
                 />
                 <input
-                  className="rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm"
+                  className="rounded-2xl bg-white/85 border border-black/10 px-3 py-2 text-sm shadow-[inset_0_2px_0_rgba(15,23,42,0.06)]"
                   placeholder="Company"
                   value={jobForm.company}
                   onChange={(e) => setJobForm((f) => ({ ...f, company: e.target.value }))}
                 />
                 <input
-                  className="rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm sm:col-span-2"
+                  className="rounded-2xl bg-white/85 border border-black/10 px-3 py-2 text-sm sm:col-span-2 shadow-[inset_0_2px_0_rgba(15,23,42,0.06)]"
                   placeholder="Job URL (optional)"
                   value={jobForm.url}
                   onChange={(e) => setJobForm((f) => ({ ...f, url: e.target.value }))}
                 />
                 <select
-                  className="rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm"
+                  className="rounded-2xl bg-white/85 border border-black/10 px-3 py-2 text-sm shadow-[inset_0_2px_0_rgba(15,23,42,0.06)]"
                   value={jobForm.status}
                   onChange={(e) => setJobForm((f) => ({ ...f, status: e.target.value }))}
                 >
@@ -398,24 +397,24 @@ export default function SkillSpherePage() {
                 </select>
               </div>
               <textarea
-                className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm min-h-[120px]"
+                className="w-full rounded-[22px] bg-white/85 border border-black/10 p-3 text-sm min-h-[120px] shadow-[inset_0_2px_0_rgba(15,23,42,0.06)]"
                 placeholder="Paste job description (30+ characters)…"
                 value={jobForm.jd}
                 onChange={(e) => setJobForm((f) => ({ ...f, jd: e.target.value }))}
               />
-              <button type="button" onClick={addJob} className="btn-primary px-5 py-2 rounded-full text-sm">
+              <button type="button" onClick={addJob} className="clay-btn px-5 py-2 rounded-full text-sm">
                 Add to tracker
               </button>
               <ul className="space-y-3 mt-4">
                 {jobs.length === 0 && <li className="text-slate-500 text-sm">No jobs yet.</li>}
                 {jobs.map((job) => (
-                  <li key={job.id} className="border border-white/10 rounded-xl p-4 bg-black/30 text-sm space-y-2">
+                  <li key={job.id} className="border border-black/10 rounded-3xl p-4 bg-white/85 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] text-sm space-y-2">
                     <div className="flex flex-wrap justify-between gap-2">
                       <div>
-                        <p className="font-medium text-white">{job.title}</p>
-                        <p className="text-slate-500">{job.company}</p>
+                        <p className="font-extrabold text-slate-950">{job.title}</p>
+                        <p className="text-slate-600">{job.company}</p>
                       </div>
-                      <span className="text-xs uppercase tracking-wider text-fuchsia-400/90">{job.status}</span>
+                      <span className="text-xs uppercase tracking-wider text-[#7c3aed] font-extrabold">{job.status}</span>
                     </div>
                     {job.url && (
                       <a href={job.url} target="_blank" rel="noreferrer" className="text-sky-400 inline-flex items-center gap-1 text-xs">
@@ -427,21 +426,21 @@ export default function SkillSpherePage() {
                         type="button"
                         disabled={busy}
                         onClick={() => scoreJob(job)}
-                        className="text-xs px-3 py-1.5 rounded-lg bg-fuchsia-600/30 border border-fuchsia-500/40 hover:bg-fuchsia-600/40"
+                        className="text-xs px-3 py-2 rounded-2xl clay-btn-secondary"
                       >
                         AI match score
                       </button>
                       <button
                         type="button"
                         onClick={() => setJobs((list) => list.filter((j) => j.id !== job.id))}
-                        className="text-xs px-3 py-1.5 rounded-lg border border-white/10 text-slate-400 hover:text-red-300"
+                        className="text-xs px-3 py-2 rounded-2xl border border-black/10 text-slate-700 hover:text-red-700 bg-white/70"
                       >
                         Remove
                       </button>
                     </div>
                     {job.match && (
-                      <div className="text-slate-300 border-t border-white/10 pt-2 mt-2 space-y-1">
-                        <p className="text-fuchsia-300 font-semibold">Match: {job.match.match_score}%</p>
+                      <div className="text-slate-800 border-t border-black/10 pt-2 mt-2 space-y-1">
+                        <p className="text-[#7c3aed] font-extrabold">Match: {job.match.match_score}%</p>
                         <p>{job.match.summary}</p>
                       </div>
                     )}
@@ -456,9 +455,9 @@ export default function SkillSpherePage() {
               <h2 className="text-xl font-display font-semibold text-white flex items-center gap-2">
                 <Users className="w-5 h-5 text-emerald-400" /> Peer Learning
               </h2>
-              <p className="text-sm text-slate-400">Study themes, accountability rhythm, and discussion prompts for your target role.</p>
+              <p className="text-sm text-slate-700">Study themes, accountability rhythm, and discussion prompts for your target role.</p>
               <input
-                className="w-full max-w-md rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm"
+                className="w-full max-w-md rounded-2xl bg-white/85 border border-black/10 px-3 py-2 text-sm shadow-[inset_0_2px_0_rgba(15,23,42,0.06)]"
                 value={peerRole}
                 onChange={(e) => setPeerRole(e.target.value)}
               />
@@ -471,28 +470,28 @@ export default function SkillSpherePage() {
                     setPeerData(data)
                   })
                 }
-                className="btn-primary px-5 py-2 rounded-full text-sm"
+                className="clay-btn px-5 py-2 rounded-full text-sm"
               >
                 Generate peer-learning plan
               </button>
               {peerData && (
-                <div className="text-sm space-y-3 border border-white/10 rounded-xl p-4 bg-black/30">
-                  <p className="text-slate-400">{peerData.accountability_rhythm}</p>
+                <div className="text-sm space-y-3 border border-black/10 rounded-3xl p-5 bg-white/85 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)]">
+                  <p className="text-slate-700 font-semibold">{peerData.accountability_rhythm}</p>
                   <div>
-                    <p className="text-emerald-400/90 text-xs uppercase mb-1">Study group themes</p>
-                    <ul className="list-disc list-inside text-slate-300">{(peerData.study_group_themes || []).map((x, i) => <li key={i}>{x}</li>)}</ul>
+                    <p className="text-emerald-700 text-xs uppercase mb-1 font-extrabold">Study group themes</p>
+                    <ul className="list-disc list-inside text-slate-800">{(peerData.study_group_themes || []).map((x, i) => <li key={i}>{x}</li>)}</ul>
                   </div>
                   <div>
-                    <p className="text-sky-400/90 text-xs uppercase mb-1">Discussion prompts</p>
-                    <ul className="list-disc list-inside text-slate-300">{(peerData.discussion_prompts || []).map((x, i) => <li key={i}>{x}</li>)}</ul>
+                    <p className="text-sky-700 text-xs uppercase mb-1 font-extrabold">Discussion prompts</p>
+                    <ul className="list-disc list-inside text-slate-800">{(peerData.discussion_prompts || []).map((x, i) => <li key={i}>{x}</li>)}</ul>
                   </div>
                   <div>
-                    <p className="text-fuchsia-400/90 text-xs uppercase mb-1">Mock peer archetypes</p>
+                    <p className="text-[#7c3aed] text-xs uppercase mb-1 font-extrabold">Mock peer archetypes</p>
                     <ul className="space-y-2">
                       {(peerData.mock_peer_profiles || []).map((p, i) => (
-                        <li key={i} className="border border-white/5 rounded-lg p-2">
-                          <span className="text-white font-medium">{p.archetype}</span> — {p.focus}
-                          <p className="text-slate-500 text-xs mt-1">{p.how_to_find}</p>
+                        <li key={i} className="border border-black/10 rounded-2xl p-3 bg-white/70">
+                          <span className="text-slate-950 font-extrabold">{p.archetype}</span> — <span className="text-slate-800">{p.focus}</span>
+                          <p className="text-slate-600 text-xs mt-1">{p.how_to_find}</p>
                         </li>
                       ))}
                     </ul>
@@ -507,7 +506,7 @@ export default function SkillSpherePage() {
               <h2 className="text-xl font-display font-semibold text-white flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-amber-400" /> Personalized Learning
               </h2>
-              <p className="text-sm text-slate-400">Phased path aligned to your detected gaps (complements the main SkillForge roadmap).</p>
+              <p className="text-sm text-slate-700">Phased path aligned to your detected gaps (complements the main SkillForge roadmap).</p>
               <button
                 type="button"
                 disabled={busy}
@@ -517,21 +516,21 @@ export default function SkillSpherePage() {
                     setLearnPath(data)
                   })
                 }
-                className="btn-primary px-5 py-2 rounded-full text-sm"
+                className="clay-btn px-5 py-2 rounded-full text-sm"
               >
                 Build learning path
               </button>
               {learnPath && (
-                <div className="text-sm border border-white/10 rounded-xl p-4 bg-black/30 space-y-3">
-                  <p className="text-white font-medium">{learnPath.path_title}</p>
-                  <p className="text-slate-400">
+                <div className="text-sm border border-black/10 rounded-3xl p-5 bg-white/85 shadow-[0_10px_0_rgba(15,23,42,0.10),0_18px_40px_rgba(15,23,42,0.06)] space-y-3">
+                  <p className="text-slate-950 font-extrabold">{learnPath.path_title}</p>
+                  <p className="text-slate-700">
                     ~{learnPath.weeks_estimate} weeks · {learnPath.weekly_commitment_hours} h/week suggested
                   </p>
                   {(learnPath.phases || []).map((ph, i) => (
-                    <div key={i} className="border-l-2 border-fuchsia-500/50 pl-3">
-                      <p className="text-fuchsia-300 font-medium">{ph.name}</p>
-                      <p className="text-slate-500 text-xs">Skills: {(ph.focus_skills || []).join(', ')}</p>
-                      <ul className="list-disc list-inside text-slate-300 mt-1">{(ph.milestones || []).map((m, j) => <li key={j}>{m}</li>)}</ul>
+                    <div key={i} className="border-l-2 border-[#7c3aed]/40 pl-3">
+                      <p className="text-[#7c3aed] font-extrabold">{ph.name}</p>
+                      <p className="text-slate-600 text-xs">Skills: {(ph.focus_skills || []).join(', ')}</p>
+                      <ul className="list-disc list-inside text-slate-800 mt-1">{(ph.milestones || []).map((m, j) => <li key={j}>{m}</li>)}</ul>
                     </div>
                   ))}
                 </div>

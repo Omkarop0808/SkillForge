@@ -10,6 +10,15 @@
   --gradient-glass: linear-gradient(135deg, rgba(236,72,153,0.05) 0%, rgba(168,85,247,0.05) 100%);
   --shadow-glow: 0 0 40px rgba(168, 85, 247, 0.2);
   --shadow-card: 0 4px 32px rgba(0, 0, 0, 0.4);
+
+  /* Claymorphism (light) */
+  --clay-bg: #f7fbf2;
+  --clay-text: #0f172a;
+  --clay-muted: #475569;
+  --clay-border: rgba(15, 23, 42, 0.08);
+  --clay-surface: rgba(255, 255, 255, 0.82);
+  --clay-shadow-base: 0 12px 0 rgba(15, 23, 42, 0.10);
+  --clay-shadow-soft: 0 26px 70px rgba(15, 23, 42, 0.10);
 }
 
 * {
@@ -20,8 +29,8 @@
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: #06020c;
-  color: #f8fafc;
+  background: var(--clay-bg);
+  color: var(--clay-text);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -35,12 +44,99 @@ h1, h2, h3, h4, h5, h6 {
 
 .glass-card {
   background: rgba(10, 5, 20, 0.6);
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border: 1px solid rgba(168, 85, 247, 0.15);
   border-radius: 16px;
   box-shadow: var(--shadow-card);
   transition: all 0.3s ease;
+}
+
+.clay-bg {
+  background: var(--clay-bg);
+  color: var(--clay-text);
+}
+
+.clay-hero-bg {
+  position: relative;
+  background: var(--clay-bg);
+}
+
+.clay-hero-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(134, 239, 172, 0.35), transparent 45%),
+    radial-gradient(circle at 85% 35%, rgba(253, 164, 175, 0.28), transparent 48%),
+    radial-gradient(circle at 55% 90%, rgba(253, 230, 138, 0.22), transparent 52%);
+  filter: blur(24px);
+  z-index: 0;
+}
+
+.clay-card {
+  background: var(--clay-surface);
+  border: 1px solid var(--clay-border);
+  border-radius: 28px;
+  box-shadow: var(--clay-shadow-base), var(--clay-shadow-soft);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.clay-card-sm {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--clay-border);
+  border-radius: 22px;
+  box-shadow: 0 10px 0 rgba(15, 23, 42, 0.10), 0 18px 40px rgba(15, 23, 42, 0.06);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.clay-pill {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid var(--clay-border);
+  border-radius: 9999px;
+  box-shadow: 0 10px 0 rgba(15, 23, 42, 0.10), 0 18px 40px rgba(15, 23, 42, 0.06);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.clay-btn {
+  background: #22c55e;
+  color: var(--clay-text);
+  font-weight: 800;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  box-shadow: 0 12px 0 rgba(15, 23, 42, 0.12), 0 22px 50px rgba(15, 23, 42, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.clay-btn:hover {
+  transform: translateY(1px);
+  box-shadow: 0 9px 0 rgba(15, 23, 42, 0.12), 0 18px 44px rgba(15, 23, 42, 0.08);
+  filter: saturate(1.02);
+}
+
+.clay-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 10px 0 rgba(15, 23, 42, 0.10), 0 18px 40px rgba(15, 23, 42, 0.06);
+}
+
+.clay-btn-secondary {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--clay-text);
+  font-weight: 800;
+  border-radius: 18px;
+  border: 1px solid var(--clay-border);
+  box-shadow: 0 10px 0 rgba(15, 23, 42, 0.10), 0 18px 40px rgba(15, 23, 42, 0.06);
+  transition: filter 0.15s ease;
+}
+
+.clay-btn-secondary:hover {
+  filter: brightness(0.99);
 }
 
 .glass-card:hover {
@@ -210,6 +306,7 @@ h1, h2, h3, h4, h5, h6 {
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: 40;
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
 
