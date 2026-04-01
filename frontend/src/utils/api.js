@@ -133,3 +133,59 @@ export async function scrapeUrl(url) {
 
   return response.json();
 }
+
+const jsonHeaders = { 'Content-Type': 'application/json' };
+
+async function skillSpherePost(path, body) {
+  const response = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: jsonHeaders,
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    let errMsg = `Failed with status ${response.status}`;
+    try {
+      const err = await response.json();
+      errMsg = err.detail || errMsg;
+    } catch (e) { /* ignore */ }
+    throw new Error(typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg));
+  }
+  return response.json();
+}
+
+export async function skillSphereCareerPersona(context) {
+  return skillSpherePost('/skill-sphere/career-persona', context);
+}
+
+export async function skillSphereCareerCoach(context) {
+  return skillSpherePost('/skill-sphere/career-coach', context);
+}
+
+export async function skillSphereJobMatch(payload) {
+  return skillSpherePost('/skill-sphere/job-match', payload);
+}
+
+export async function skillSpherePeerLearning(payload) {
+  return skillSpherePost('/skill-sphere/peer-learning', payload);
+}
+
+export async function skillSpherePersonalizedLearning(context) {
+  return skillSpherePost('/skill-sphere/personalized-learning', context);
+}
+
+export async function skillSphereInterviewReport(payload) {
+  return skillSpherePost('/skill-sphere/interview-report', payload);
+}
+
+export async function skillSphereJobTrends(payload) {
+  return skillSpherePost('/skill-sphere/job-trends', payload);
+}
+
+export async function skillSpherePortfolio(payload) {
+  return skillSpherePost('/skill-sphere/portfolio', payload);
+}
+
+/** AI: roles that fit current skills vs after closing JD gaps */
+export async function skillSphereRoleTargets(payload) {
+  return skillSpherePost('/skill-sphere/role-targets', payload);
+}

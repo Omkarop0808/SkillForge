@@ -151,7 +151,7 @@ RESUME:
 Resume: {resume_text[:6000]}"""
             
             response = client.models.generate_content(
-                model="gemini-1.5-flash",
+                model="gemini-2.0-flash",
                 contents=simple_prompt,
                 config=GenerateContentConfig(
                     temperature=0.2,
@@ -210,7 +210,7 @@ JD:
             simple_prompt = f"""Extract skills from JD as JSON: {{"skills": [{{"name": "SkillName", "importance": "required", "category": "general"}}], "experience_level": "mid"}}
 JD: {jd_text[:2000]}"""
             response = client.models.generate_content(
-                model="gemini-1.5-flash",
+                model="gemini-2.0-flash",
                 contents=simple_prompt,
                 config=GenerateContentConfig(
                     temperature=0.2, 

@@ -58,6 +58,7 @@ export default function UploadPage() {
       sessionStorage.setItem('skillforge_session', JSON.stringify({
         sessionId: resumeResult.session_id,
         resumeSkills: resumeResult.skills,
+        resumeRawText: resumeResult.raw_text || '',
         experienceLevel: resumeResult.experience_level,
         jdText: jdText.trim(),
         domain,

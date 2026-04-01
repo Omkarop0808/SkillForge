@@ -126,3 +126,68 @@ class ProgressUpdateResponse(BaseModel):
     completion_percentage: float
     updated_modules: list[dict]
     newly_unlocked: list[str]
+
+
+# ─── Skill Sphere (Career intelligence hub) ───────────────────
+
+class ChatMessage(BaseModel):
+    role: str = Field(..., pattern="^(user|assistant|system)$")
+    content: str = Field(..., min_length=1, max_length=8000)
+
+
+class SkillSphereContext(BaseModel):
+    """Optional context from an existing SkillForge analysis session."""
+
+    resume_text: str = ""
+    jd_text: str = ""
+    resume_skills: list[str] = []
+    gap_skills: list[str] = []
+    domain: str = "tech"
+
+
+class CareerPersonaRequest(SkillSphereContext):
+    pass
+
+
+class CareerCoachRequest(SkillSphereContext):
+    messages: list[ChatMessage] = Field(..., min_length=1)
+
+
+class JobMatchRequest(SkillSphereContext):
+    job_title: str = Field(..., min_length=1, max_length=200)
+    company: str = Field(default="", max_length=200)
+    job_description: str = Field(..., min_length=30, max_length=12000)
+
+
+class PeerLearningRequest(SkillSphereContext):
+    target_role: str = Field(..., min_length=2, max_length=200)
+
+
+class PersonalizedLearningRequest(SkillSphereContext):
+    pass
+
+
+class InterviewReportRequest(BaseModel):
+    problem_statement: str = Field(default="", max_length=4000)
+    code: str = Field(..., min_length=1, max_length=14000)
+    language: str = Field(default="python", max_length=40)
+
+
+class JobTrendsRequest(SkillSphereContext):
+    profile_role_hint: str = Field(default="Software Engineer", max_length=200)
+    location_hint: str = Field(default="", max_length=120)
+
+
+class PortfolioRequest(BaseModel):
+    resume_text: str = Field(..., min_length=80, max_length=12000)
+    name_hint: str = Field(default="Professional", max_length=120)
+
+
+class RoleTargetsRequest(BaseModel):
+    """Suggest roles reachable with current skills vs target JD gaps."""
+
+    resume_skills: list[str] = Field(default_factory=list)
+    skills_still_needed: list[str] = Field(default_factory=list)
+    experience_level: str = Field(default="mid", max_length=24)
+    jd_text_snippet: str = Field(default="", max_length=8000)
+    match_percentage: float = Field(default=0.0, ge=0, le=100)

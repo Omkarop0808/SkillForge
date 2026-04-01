@@ -31,7 +31,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from config import settings
-from routers import upload, analyze, demo, scraper, quiz
+from routers import upload, analyze, demo, scraper, quiz, skill_sphere
 
 # Load environment variables
 load_dotenv()
@@ -60,6 +60,7 @@ app.include_router(analyze.router, prefix="/api", tags=["Analysis"])
 app.include_router(demo.router, prefix="/api", tags=["Demo"])
 app.include_router(scraper.router, prefix="/api", tags=["Scraper"])
 app.include_router(quiz.router, prefix="/api/quiz", tags=["Quiz"])
+app.include_router(skill_sphere.router, prefix="/api", tags=["Skill Sphere"])
 
 @app.get("/api/debug/models", tags=["Debug"])
 async def debug_models():

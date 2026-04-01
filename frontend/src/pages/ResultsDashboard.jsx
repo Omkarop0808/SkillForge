@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, Play, CheckCircle2, Lock, Flame, Trophy, LayoutDashboard, BrainCircuit, Target, Settings, HelpCircle, ChevronRight, X, BookOpen, Clock, PlayCircle, Loader2, LogOut, ArrowRight, Video, Download, Menu } from 'lucide-react'
+import { Sparkles, Play, CheckCircle2, Lock, Flame, Trophy, LayoutDashboard, BrainCircuit, Target, Settings, HelpCircle, ChevronRight, X, BookOpen, Clock, PlayCircle, Loader2, LogOut, ArrowRight, Video, Download, Menu, Orbit } from 'lucide-react'
 import { UserButton, useUser } from '@clerk/clerk-react'
 import YouTube from 'react-youtube'
 import confetti from 'canvas-confetti'
@@ -8,7 +8,20 @@ import { ReactFlow, Background, Controls, Handle, Position } from '@xyflow/react
 import '@xyflow/react/dist/style.css'
 import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
-import { scrapeUrl } from '../utils/api'
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Legend,
+} from 'recharts'
+import { scrapeUrl, skillSphereRoleTargets } from '../utils/api'
 
 /* ─── Gamified Node Component ──────────────────────── */
 function CandyNode({ data }) {
@@ -220,7 +233,13 @@ export default function ResultsDashboard() {
     setActiveVideo(null)
   }, [selectedModule])
   const [isExporting, setIsExporting] = useState(false)
-  
+
+  const [roleInsights, setRoleInsights] = useState(null)
+  const [roleInsightsLoading, setRoleInsightsLoading] = useState(false)
+  const [roleInsightsError, setRoleInsightsError] = useState('')
+  const roleInsightSessionRef = useRef(null)
+  const [roleInsightRefresh, setRoleInsightRefresh] = useState(0)
+
   const { user } = useUser()
   const userName = user?.firstName || "Student"
   
@@ -357,6 +376,96 @@ export default function ResultsDashboard() {
       return next
     })
   }
+
+  useEffect(() => {
+    setRoleInsights(null)
+    setRoleInsightsError('')
+    roleInsightSessionRef.current = null
+    setRoleInsightRefresh(0)
+  }, [result?.session_id])
+
+  useEffect(() => {
+    if (currentView !== 'progress' || !result?.session_id) return
+    if (roleInsightSessionRef.current === result.session_id) return
+    let cancelled = false
+    ;(async () => {
+      setRoleInsightsLoading(true)
+      setRoleInsightsError('')
+      try {
+        const profileSkills = result.profile?.skills || []
+        const skills = profileSkills.map((s) => s.name)
+        const roadmapMods = result.roadmap?.phases?.flatMap((p) => p.modules || []) || []
+        const gaps = [
+          ...new Set([
+            ...(result.gap_summary?.critical_missing || []),
+            ...roadmapMods.map((m) => m.skill),
+          ]),
+        ]
+        let jd = ''
+        try {
+          const raw = sessionStorage.getItem('skillforge_session')
+          if (raw) jd = JSON.parse(raw).jdText || ''
+        } catch {
+          /* ignore */
+        }
+        const data = await skillSphereRoleTargets({
+          resume_skills: skills,
+          skills_still_needed: gaps.slice(0, 35),
+          experience_level: result.profile?.experience_level || 'mid',
+          jd_text_snippet: jd.slice(0, 6000),
+          match_percentage: result.profile?.match_percentage ?? 0,
+        })
+        if (!cancelled) {
+          setRoleInsights(data)
+          roleInsightSessionRef.current = result.session_id
+        }
+      } catch (e) {
+        if (!cancelled) setRoleInsightsError(e.message || 'Failed to load role insights')
+      } finally {
+        if (!cancelled) setRoleInsightsLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [currentView, result, roleInsightRefresh])
+
+  const chartAlignment = useMemo(() => {
+    if (!result?.gap_summary) return []
+    const g = result.gap_summary
+    const tr = Math.max(g.total_required || 0, 1)
+    const mc = Math.min(g.matched_count || 0, tr)
+    const gap = Math.max(0, tr - mc)
+    if (gap === 0 && mc > 0) {
+      return [{ name: 'Aligned with JD', value: mc, fill: '#10b981' }]
+    }
+    return [
+      { name: 'Aligned with target JD', value: mc || 0.001, fill: '#a855f7' },
+      { name: 'Still to acquire', value: gap || 0.001, fill: '#475569' },
+    ]
+  }, [result])
+
+  const skillCoverageBars = useMemo(() => {
+    if (!result?.profile?.skills?.length) return []
+    const score = (m) => (m === 'strong' ? 100 : m === 'partial' ? 62 : 38)
+    return [...result.profile.skills]
+      .map((s) => ({
+        name: s.name.length > 20 ? `${s.name.slice(0, 18)}…` : s.name,
+        Coverage: score(s.match),
+        match: s.match,
+      }))
+      .sort((a, b) => a.Coverage - b.Coverage)
+      .slice(0, 14)
+  }, [result])
+
+  const roadmapProgressBars = useMemo(() => {
+    if (!result?.roadmap) return []
+    const mods = result.roadmap.phases?.flatMap((p) => p.modules || []) || []
+    return mods.slice(0, 16).map((m) => ({
+      name: m.skill.length > 20 ? `${m.skill.slice(0, 18)}…` : m.skill,
+      Progress: completedIds.has(m.skill) ? 100 : 0,
+    }))
+  }, [result, completedIds])
 
   if (!result) return null
 
@@ -742,6 +851,12 @@ export default function ResultsDashboard() {
           >
             <Flame className="w-4 h-4 text-orange-500" /> Quiz Arena
           </div>
+          <div 
+            onClick={() => navigate('/skill-sphere')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors text-slate-400 hover:text-white hover:bg-fuchsia-500/10 hover:border hover:border-fuchsia-500/20`}
+          >
+            <Orbit className="w-4 h-4 text-fuchsia-400" /> Skill Sphere
+          </div>
         </nav>
 
         <p className="text-xs font-bold text-slate-500 mb-4 tracking-widest uppercase">Support</p>
@@ -1125,6 +1240,201 @@ export default function ResultsDashboard() {
                   <p className="text-4xl font-bold text-blue-400 mb-2">{Math.ceil((allModules.reduce((acc, m) => acc + (m.estimated_hours || 0), 0) - [...completedIds].reduce((acc, id) => { const mod = allModules.find(m => m.skill === id); return acc + (mod ? (mod.estimated_hours || 0) : 0); }, 0)))} Hrs</p>
                   <p className="text-xs text-blue-500">Remaining time requirement</p>
                </div>
+            </div>
+
+            <div className="mb-12 space-y-8">
+              <div>
+                <h2 className="text-2xl font-display font-semibold text-white mb-1 flex items-center gap-2">
+                  <BrainCircuit className="w-7 h-7 text-fuchsia-400" /> Skill intelligence
+                </h2>
+                <p className="text-slate-400 text-sm max-w-3xl">
+                  Visual gap vs your target JD, how your resume lines up, roadmap completion, and AI-suggested roles you can
+                  target today versus after you finish this plan.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div className="glass-card p-6 border border-white/10 bg-[#0a0514]/90">
+                  <h3 className="text-lg font-bold text-white mb-1">Target role: have vs need</h3>
+                  <p className="text-xs text-slate-500 mb-4">
+                    Matched JD skills ({gap_summary?.matched_count ?? 0} of {gap_summary?.total_required ?? '—'}) vs what is
+                    still open for this role.
+                  </p>
+                  <div className="h-[260px] w-full">
+                    {chartAlignment.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={chartAlignment}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={58}
+                            outerRadius={88}
+                            paddingAngle={2}
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          >
+                            {chartAlignment.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)' }}
+                            labelStyle={{ color: '#e2e8f0' }}
+                          />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <p className="text-slate-500 text-sm">No alignment data yet.</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="glass-card p-6 border border-white/10 bg-[#0a0514]/90">
+                  <h3 className="text-lg font-bold text-white mb-1">Resume skills → JD alignment</h3>
+                  <p className="text-xs text-slate-500 mb-4">
+                    Higher bars = stronger match to the job description; lower = extra or weaker overlap.
+                  </p>
+                  <div className="h-[280px] w-full">
+                    {skillCoverageBars.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={skillCoverageBars} margin={{ left: 8, right: 16 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
+                          <XAxis type="number" domain={[0, 100]} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                          <YAxis
+                            type="category"
+                            dataKey="name"
+                            width={100}
+                            tick={{ fill: '#cbd5e1', fontSize: 10 }}
+                          />
+                          <Tooltip
+                            contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)' }}
+                            formatter={(v, _n, p) => [`${v}% (${p?.payload?.match})`, 'Coverage']}
+                          />
+                          <Bar dataKey="Coverage" fill="#a855f7" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <p className="text-slate-500 text-sm">No resume skills to chart.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass-card p-6 border border-white/10 bg-[#0a0514]/90">
+                <h3 className="text-lg font-bold text-white mb-1">Roadmap skills — completion</h3>
+                <p className="text-xs text-slate-500 mb-4">
+                  Each bar is a skill required for your target role; 100% when marked complete in the Learning Hub.
+                </p>
+                <div className="h-[min(420px,50vh)] w-full">
+                  {roadmapProgressBars.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart layout="vertical" data={roadmapProgressBars} margin={{ left: 8, right: 16 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
+                        <XAxis type="number" domain={[0, 100]} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                        <YAxis type="category" dataKey="name" width={110} tick={{ fill: '#cbd5e1', fontSize: 10 }} />
+                        <Tooltip
+                          contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)' }}
+                          formatter={(v) => [`${v}%`, 'Done']}
+                        />
+                        <Bar dataKey="Progress" fill="#34d399" radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <p className="text-slate-500 text-sm">No roadmap modules.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="glass-card p-6 border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-950/40 to-[#0a0514]">
+                <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-fuchsia-400" /> Roles you can target (AI)
+                    </h3>
+                    <p className="text-xs text-slate-400 max-w-2xl">
+                      Suggested from your current resume skills, gaps vs this JD, and your match score — refresh after you
+                      complete modules.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      roleInsightSessionRef.current = null
+                      setRoleInsightRefresh((n) => n + 1)
+                    }}
+                    disabled={roleInsightsLoading}
+                    className="text-xs px-4 py-2 rounded-xl border border-white/15 text-slate-300 hover:bg-white/5 disabled:opacity-50"
+                  >
+                    {roleInsightsLoading ? 'Refreshing…' : 'Refresh insights'}
+                  </button>
+                </div>
+                {roleInsightsLoading && (
+                  <div className="flex items-center gap-2 text-slate-400 text-sm py-8">
+                    <Loader2 className="w-5 h-5 animate-spin" /> Generating role suggestions…
+                  </div>
+                )}
+                {roleInsightsError && (
+                  <p className="text-sm text-red-400 border border-red-500/30 rounded-lg px-4 py-3">{roleInsightsError}</p>
+                )}
+                {!roleInsightsLoading && roleInsights && (
+                  <div className="space-y-6 text-sm">
+                    {roleInsights.one_line_summary && (
+                      <p className="text-slate-200 border-l-2 border-fuchsia-500 pl-4">{roleInsights.one_line_summary}</p>
+                    )}
+                    {roleInsights.coverage_vs_target && (
+                      <p className="text-slate-400 leading-relaxed">{roleInsights.coverage_vs_target}</p>
+                    )}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-widest text-emerald-400/90 mb-3">
+                          Realistic with your skills now
+                        </p>
+                        <ul className="space-y-3">
+                          {(roleInsights.realistic_roles_now || []).map((r, i) => (
+                            <li key={i} className="rounded-xl bg-black/30 border border-white/10 p-4">
+                              <div className="flex justify-between gap-2 items-start">
+                                <span className="font-semibold text-white">{r.title}</span>
+                                {r.fit_score != null && (
+                                  <span className="text-xs shrink-0 text-fuchsia-300">{r.fit_score}% fit</span>
+                                )}
+                              </div>
+                              <p className="text-slate-400 text-xs mt-2 leading-relaxed">{r.rationale}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-widest text-amber-400/90 mb-3">
+                          After you close the gap
+                        </p>
+                        <ul className="space-y-3">
+                          {(roleInsights.stretch_after_roadmap || []).map((r, i) => (
+                            <li key={i} className="rounded-xl bg-black/30 border border-white/10 p-4">
+                              <span className="font-semibold text-white">{r.title}</span>
+                              <p className="text-slate-400 text-xs mt-2 leading-relaxed">{r.why}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    {(roleInsights.skill_gap_priority || []).length > 0 && (
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Priority gaps</p>
+                        <div className="flex flex-wrap gap-2">
+                          {roleInsights.skill_gap_priority.map((s, i) => (
+                            <span key={i} className="text-xs px-3 py-1 rounded-full bg-white/10 text-slate-300 border border-white/10">
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
